@@ -6,6 +6,9 @@ plugins {
     id("com.google.gms.google-services") version "4.4.2" apply false
 }
 
+dependancies{
+    implementation(platform("com.google.gms.google-services"))
+}
 android {
     namespace = "com.example.carb_cruncher"
     compileSdk = flutter.compileSdkVersion

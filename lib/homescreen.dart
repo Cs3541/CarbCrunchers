@@ -10,13 +10,14 @@ class HomeScreen extends StatelessWidget {
         child: Align(
           alignment: Alignment.topCenter,
           child: Text(
-          'Carb Crunchers',
-          style: TextStyle(
-          fontSize: 24.0, 
-          fontWeight: FontWeight.bold,
-           color: Color.fromARGB(255, 6, 239, 6),),
+            'Carb Crunchers',
+            style: TextStyle(
+              fontSize: 24.0,
+              fontWeight: FontWeight.bold,
+              color: Colors.blue,
+            ),
+          ),
         ),
-      ),
       ),
     );
   }

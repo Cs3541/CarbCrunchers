@@ -16,23 +16,18 @@ class HomeScreen extends StatelessWidget {
               Text(
                 'Carb Crunchers',
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 32.0,
+                style: TextStyle(
+                  fontSize: 24.0,
                   fontWeight: FontWeight.bold,
-                  fontFamily: 'Homemade Apple',
-                  color: const Color.fromARGB(255, 180, 83, 9),
+                  color: const Color.fromARGB(255, 67, 249, 6),
                 ),
               ),
-              const SizedBox(height: 64.0),
+              const SizedBox(height: 24.0),
               Row(
                 children: [
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1F5DA8),
-                        foregroundColor: Colors.white,
-                      ),
                       child: const SizedBox(
                         height: 64.0,
                         child: Center(child: Text('My Recipes')),
@@ -43,13 +38,9 @@ class HomeScreen extends StatelessWidget {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1F5DA8),
-                        foregroundColor: Colors.white,
-                      ),
                       child: const SizedBox(
                         height: 64.0,
-                        child: Center(child: Text('Search Recipes')),
+                        child: Center(child: Text("Search Recipes")),
                       ),
                     ),
                   ),
@@ -58,10 +49,6 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: 16.0),
               ElevatedButton(
                 onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1F5DA8),
-                  foregroundColor: Colors.white,
-                ),
                 child: const SizedBox(
                   height: 64.0,
                   child: Center(child: Text('Goals')),

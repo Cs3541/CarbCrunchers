@@ -16,10 +16,11 @@ class HomeScreen extends StatelessWidget {
               Text(
                 'Carb Crunchers',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 24.0,
+                style: const TextStyle(
+                  fontSize: 28.0,
                   fontWeight: FontWeight.bold,
-                  color: const Color.fromARGB(255, 67, 249, 6),
+                  fontFamily: 'Homemade Apple',
+                  color: Color(0xFFB45309),
                 ),
               ),
               const SizedBox(height: 24.0),
@@ -28,8 +29,12 @@ class HomeScreen extends StatelessWidget {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1F5DA8),
+                        foregroundColor: Colors.white,
+                      ),
                       child: const SizedBox(
-                        height: 64.0,
+                        height: 72.0,
                         child: Center(child: Text('My Recipes')),
                       ),
                     ),
@@ -38,8 +43,12 @@ class HomeScreen extends StatelessWidget {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1F5DA8),
+                        foregroundColor: Colors.white,
+                      ),
                       child: const SizedBox(
-                        height: 64.0,
+                        height: 72.0,
                         child: Center(child: Text("Search Recipes")),
                       ),
                     ),
@@ -49,8 +58,12 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: 16.0),
               ElevatedButton(
                 onPressed: () {},
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF1F5DA8),
+                  foregroundColor: Colors.white,
+                ),
                 child: const SizedBox(
-                  height: 64.0,
+                  height: 72.0,
                   child: Center(child: Text('Goals')),
                 ),
               ),

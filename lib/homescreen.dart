@@ -19,6 +19,7 @@ class HomeScreen extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 32.0,
                   fontWeight: FontWeight.bold,
+                  fontFamily: 'Homemade Apple',
                   color: const Color.fromARGB(255, 180, 83, 9),
                 ),
               ),

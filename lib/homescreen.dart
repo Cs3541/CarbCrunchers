@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'goals_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -9,13 +10,30 @@ class HomeScreen extends StatelessWidget {
       body: SafeArea(
         child: Align(
           alignment: Alignment.topCenter,
-          child: Text(
-            'Carb Crunchers',
-            style: TextStyle(
-              fontSize: 24.0,
-              fontWeight: FontWeight.bold,
-              color: Colors.blue,
-            ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Carb Crunchers',
+                style: TextStyle(
+                  fontSize: 24.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue,
+                ),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const GoalsScreen(),
+                    ),
+                  );
+                },
+                child: const Text('Goals'),
+              ),
+            ],
           ),
         ),
       ),

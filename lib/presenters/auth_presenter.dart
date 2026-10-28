@@ -1,4 +1,4 @@
-import '../Models/auth_model.dart';
+import '../models/auth_model.dart';
 
 class AuthPresenter {
   final AuthModel _model = AuthModel();

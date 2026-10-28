@@ -1,5 +1,5 @@
-import 'package:carb_cruncher/Models/category_model.dart';
-import 'package:carb_cruncher/Models/recipe_model.dart';
+import 'package:carb_cruncher/models/category_model.dart';
+import 'package:carb_cruncher/models/recipe_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 

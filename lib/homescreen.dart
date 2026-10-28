@@ -139,7 +139,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 16.0),
+              const SizedBox(height: 72.0),
               ElevatedButton(
                 onPressed: () {
                   Navigator.push(
@@ -149,7 +149,14 @@ class HomeScreen extends StatelessWidget {
                     ),
                   );
                 },
-                child: const Text('Goals'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF1F5DA8),
+                  foregroundColor: Colors.white,
+                ),
+                child: const SizedBox(
+                  height: 72.0,
+                  child: Center(child: Text('Goals')),
+                ),
               ),
             ],
           ),

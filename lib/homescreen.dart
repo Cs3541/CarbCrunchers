@@ -14,7 +14,7 @@ class HomeScreen extends StatelessWidget {
     final authPresenter = AuthPresenter();
 
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 123, 186, 253),
+      backgroundColor: const Color.fromARGB(255, 247, 231, 206),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -139,7 +139,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 72.0),
+              const SizedBox(height: 16.0),
               ElevatedButton(
                 onPressed: () {
                   Navigator.push(

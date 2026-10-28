@@ -1,7 +1,7 @@
 import 'package:carb_cruncher/models/nutrition_model.dart';
 import 'package:flutter/material.dart';
 
-import './Models/recipe_model.dart';
+import './models/recipe_model.dart';
 
 // THIS IS NOT FINAL.
 // This is a just a basic scaffold of the recipe page, and it can be changed later.

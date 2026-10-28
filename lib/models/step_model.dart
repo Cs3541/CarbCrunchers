@@ -1,15 +1,22 @@
-
 class StepModel {
-
-  final List<int> ingredientIds;
+  final List<String> ingredientIds;
   final bool is_passive;
   final String text;
-  final int timer;
+  final int? timerSec;
 
   StepModel({
-    required this.ingredientIds,
-    required this.is_passive,
     required this.text,
-    required this.timer,
+    this.timerSec,
+    this.ingredientIds = const [],
+    this.is_passive = false,
   });
+
+  factory StepModel.fromMap(Map<String, dynamic> map) {
+    return StepModel(
+      text: map['text'] as String? ?? '',
+      is_passive: map['is_passive'] as bool? ?? false,
+      timerSec: (map['timer_sec'] as num?)?.toInt(),
+      ingredientIds: (map['ingredient_ids'] as List? ?? []).cast<String>(),
+    );
+  }
 }

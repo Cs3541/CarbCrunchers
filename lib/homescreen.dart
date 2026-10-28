@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'browserecipes.dart';
+
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -28,14 +30,21 @@ class HomeScreen extends StatelessWidget {
                 children: [
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => BrowseRecipiesScreen(),
+                          ),
+                        );
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF1F5DA8),
                         foregroundColor: Colors.white,
                       ),
                       child: const SizedBox(
                         height: 72.0,
-                        child: Center(child: Text('My Recipes')),
+                        child: Center(child: Text('Browse Recipes')),
                       ),
                     ),
                   ),
@@ -49,7 +58,7 @@ class HomeScreen extends StatelessWidget {
                       ),
                       child: const SizedBox(
                         height: 72.0,
-                        child: Center(child: Text("Search Recipes")),
+                        child: Center(child: Text("My Recipes")),
                       ),
                     ),
                   ),

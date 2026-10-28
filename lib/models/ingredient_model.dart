@@ -1,17 +1,25 @@
-
 class IngredientModel {
-
   final String id;
-  final String name;
-  final double quantity;
+  final double? quantity;
+  final String? unit;
+  final String? name;
   final String raw;
-  final String unit;
 
   IngredientModel({
-    required this.name,
+    this.name,
     required this.id,
-    required this.quantity,
+    this.quantity,
     required this.raw,
-    required this.unit,
+    this.unit,
   });
+
+  factory IngredientModel.fromMap(Map<String, dynamic> map) {
+    return IngredientModel(
+      id: map['id'] as String? ?? '',
+      raw: map['raw'] as String? ?? '',
+      quantity: (map['quantity'] as num?)?.toDouble(),
+      unit: map['unit'] as String?,
+      name: map['name'] as String?,
+    );
+  }
 }

@@ -1,8 +1,11 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+
 import 'homescreen.dart';
 
-
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(const carbCrunchersApp());
 }
 
@@ -13,9 +16,7 @@ class carbCrunchersApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Carb Crunchers',
-      theme: ThemeData(
-        primaryColor: const Color.fromARGB(255, 248, 76, 2),
-      ),
+      theme: ThemeData(primaryColor: const Color.fromARGB(255, 248, 76, 2)),
       home: const HomeScreen(),
     );
   }

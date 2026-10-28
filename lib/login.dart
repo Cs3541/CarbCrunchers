@@ -1,7 +1,7 @@
 import 'package:carb_cruncher/homescreen.dart';
 import 'package:flutter/material.dart';
 import 'signup.dart';
-import 'Presenters/AuthPresenter.dart';
+import 'Presenters/auth_presenter.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -24,7 +24,7 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _errorMessage;
 
   Future<void> handleLogin() async {
-    final error = await _presenter.signIn(
+    final error = await _presenter.login(
       emailController.text.trim(),
       passwordController.text.trim(),
     );

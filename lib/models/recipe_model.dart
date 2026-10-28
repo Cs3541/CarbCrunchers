@@ -1,11 +1,11 @@
-import 'package:carb_cruncher/models/ingredient_model.dart';
-import 'package:carb_cruncher/models/step_model.dart';
+import 'package:carb_cruncher/Models/ingredient_model.dart';
+import 'package:carb_cruncher/Models/step_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
-import '../models/nutrition_model.dart';
-import '../models/category_model.dart';
+import '../Models/nutrition_model.dart';
+import '../Models/category_model.dart';
 
 class Recipe {
   final String title;

@@ -1,4 +1,4 @@
-import 'package:carb_cruncher/models/recipe_model.dart';
+import 'package:carb_cruncher/Models/recipe_model.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 import '../models/category_model.dart';

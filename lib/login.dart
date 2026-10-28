@@ -18,14 +18,14 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _errorMessage;
 
   Future<void> handleLogin() async {
-    final error = await _presenter.signIn(
+    final error = await _presenter.login(
       emailController.text.trim(),
       passwordController.text.trim(),
     );
 
     if (!mounted) return;
     if (error != null) {
-      setState(() => _errorMessage = error);
+      setState(() => _errorMessage = error.toString());
     } else {
       Navigator.popUntil(context, (route) => route.isFirst);
     }

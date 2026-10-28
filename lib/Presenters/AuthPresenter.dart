@@ -5,7 +5,7 @@ class AuthPresenter {
   final AuthModel _authModel = AuthModel();
 
   Future<String?> signIn(String email, String password) async {
-    return _authModel.login(email, password);
+    return _authModel.signIn(email, password);
   } 
 
   Future<String?> signUp(String email, String password) async {
@@ -19,4 +19,6 @@ class AuthPresenter {
 
   Stream<User?> get user => _authModel.authStateChanges();
   User? get currentUser => _authModel.currentUser;
+
+  Future<Object?> login(String trim, String trim2) async {}
 }

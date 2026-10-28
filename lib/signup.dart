@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+
 import 'login.dart';
-import 'homescreen.dart';
 import 'Presenters/AuthPresenter.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -9,6 +9,7 @@ class SignupScreen extends StatefulWidget {
   @override
   State<SignupScreen> createState() => _SignupScreenState();
 }
+
 class _SignupScreenState extends State<SignupScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
@@ -22,14 +23,19 @@ class _SignupScreenState extends State<SignupScreen> {
       passwordController.text.trim(),
     );
 
+    if (!mounted) return;
     if (error != null) {
       setState(() => _errorMessage = error);
     } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
+      Navigator.popUntil(context, (route) => route.isFirst);
     }
+  }
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -44,21 +50,14 @@ class _SignupScreenState extends State<SignupScreen> {
         child: Column(
           children: [
             if (_errorMessage != null)
-              Text(
-                _errorMessage!,
-                style: const TextStyle(color: Colors.red),
-              ),
+              Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
             TextField(
               controller: emailController,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-              ),
+              decoration: const InputDecoration(labelText: 'Email'),
             ),
             TextField(
               controller: passwordController,
-              decoration: const InputDecoration(
-                labelText: 'Password',
-              ),
+              decoration: const InputDecoration(labelText: 'Password'),
               obscureText: true,
             ),
             const SizedBox(height: 20.0),

@@ -1,5 +1,5 @@
-import 'package:carb_cruncher/homescreen.dart';
 import 'package:flutter/material.dart';
+
 import 'signup.dart';
 import 'Presenters/AuthPresenter.dart';
 
@@ -8,12 +8,6 @@ class LoginScreen extends StatefulWidget {
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
-
-  @override
-  Widget build(BuildContext context) {
-    // TODO: implement build
-    throw UnimplementedError();
-  }
 }
 
 class _LoginScreenState extends State<LoginScreen> {
@@ -29,15 +23,21 @@ class _LoginScreenState extends State<LoginScreen> {
       passwordController.text.trim(),
     );
 
+    if (!mounted) return;
     if (error != null) {
       setState(() => _errorMessage = error);
     } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
+      Navigator.popUntil(context, (route) => route.isFirst);
     }
   }
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,28 +50,18 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Column(
           children: [
             if (_errorMessage != null)
-              Text(
-                _errorMessage!,
-                style: const TextStyle(color: Colors.red),
-              ),
+              Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
             TextField(
               controller: emailController,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-              ),
+              decoration: const InputDecoration(labelText: 'Email'),
             ),
             TextField(
               controller: passwordController,
-              decoration: const InputDecoration(
-                labelText: 'Password',
-              ),
+              decoration: const InputDecoration(labelText: 'Password'),
               obscureText: true,
             ),
             const SizedBox(height: 20.0),
-            ElevatedButton(
-              onPressed: handleLogin,
-              child: const Text('Login'),
-            ),
+            ElevatedButton(onPressed: handleLogin, child: const Text('Login')),
             TextButton(
               onPressed: () {
                 Navigator.push(

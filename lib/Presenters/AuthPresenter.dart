@@ -5,7 +5,7 @@ class AuthPresenter {
   final AuthModel _authModel = AuthModel();
 
   Future<String?> signIn(String email, String password) async {
-    return _authModel.signIn(email, password);
+    return _authModel.login(email, password);
   } 
 
   Future<String?> signUp(String email, String password) async {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'goals_screen.dart';
 
 import 'browserecipes.dart';
 
@@ -66,15 +67,17 @@ class HomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16.0),
               ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1F5DA8),
-                  foregroundColor: Colors.white,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const GoalsScreen(),
+                    ),
+                  );
+                },
+                child: const Text('Goals'),
                 ),
-                child: const SizedBox(
-                  height: 72.0,
-                  child: Center(child: Text('Goals')),
-                ),
+
               ),
             ],
           ),

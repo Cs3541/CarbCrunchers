@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "898513206829",
+    "firebase_url": "https://carb-crunchers-default-rtdb.firebaseio.com",
+    "project_id": "carb-crunchers",
+    "storage_bucket": "carb-crunchers.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:898513206829:android:bd516ad3d3d7dc91c102a4",
+        "android_client_info": {
+          "package_name": "com.company.carb_crunchers"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQnkQxkBKxVFq0k6PsfbAbOeWFULx8UiI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:898513206829:android:ba0dcbd8e7979317c102a4",
+        "android_client_info": {
+          "package_name": "com.example.carb_cruncher"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQnkQxkBKxVFq0k6PsfbAbOeWFULx8UiI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,27 +1,71 @@
 import 'package:flutter/material.dart';
 import 'goals_screen.dart';
 
+import 'browserecipes.dart';
+
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 123, 186, 253),
       body: SafeArea(
-        child: Align(
-          alignment: Alignment.topCenter,
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
+              Text(
                 'Carb Crunchers',
-                style: TextStyle(
-                  fontSize: 24.0,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 28.0,
                   fontWeight: FontWeight.bold,
-                  color: Colors.blue,
+                  fontFamily: 'Homemade Apple',
+                  color: Color(0xFFB45309),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24.0),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => BrowseRecipiesScreen(),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1F5DA8),
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const SizedBox(
+                        height: 72.0,
+                        child: Center(child: Text('Browse Recipes')),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16.0),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1F5DA8),
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const SizedBox(
+                        height: 72.0,
+                        child: Center(child: Text("My Recipes")),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16.0),
               ElevatedButton(
                 onPressed: () {
                   Navigator.push(
@@ -32,6 +76,8 @@ class HomeScreen extends StatelessWidget {
                   );
                 },
                 child: const Text('Goals'),
+                ),
+
               ),
             ],
           ),

@@ -1,7 +1,7 @@
+import 'package:carb_cruncher/Presenters/AuthPresenter.dart';
 import 'package:flutter/material.dart';
 
 import 'signup.dart';
-import 'Presenters/AuthPresenter.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

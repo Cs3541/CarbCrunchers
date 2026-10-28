@@ -22,7 +22,7 @@ class HomeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               SizedBox(
-                height: 48.0,
+                height: 72.0,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
@@ -48,10 +48,18 @@ class HomeScreen extends StatelessWidget {
                           final user = snapshot.data;
                           return PopupMenuButton<String>(
                             tooltip: 'Profile',
-                            icon: const Icon(
-                              Icons.account_circle_outlined,
-                              size: 30.0,
-                              color: Color(0xFF1F5DA8),
+                            child: Material(
+                              color: const Color(0xFF1F5DA8),
+                              shape: const CircleBorder(),
+                              child: const SizedBox(
+                                width: 40.0,
+                                height: 40.0,
+                                child: Icon(
+                                  Icons.account_circle_outlined,
+                                  size: 30.0,
+                                  color: Colors.white,
+                                ),
+                              ),
                             ),
                             onSelected: (action) async {
                               if (action == 'sign-in') {

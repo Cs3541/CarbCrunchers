@@ -24,6 +24,18 @@ class AuthModel {
     }
   }
 
+  Future<String?> resetPassword(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+      return null;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') return null;
+      return e.toString();
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
   Future<void> signOut() async {
     await _auth.signOut();
   }

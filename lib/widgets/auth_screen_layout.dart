@@ -11,7 +11,10 @@ class AuthScreenLayout extends StatelessWidget {
     required this.switchPrompt,
     required this.switchLabel,
     required this.onSwitch,
+    this.onPasswordReset,
+    this.isSendingReset = false,
     this.errorMessage,
+    this.successMessage,
     super.key,
   });
 
@@ -24,7 +27,10 @@ class AuthScreenLayout extends StatelessWidget {
   final String switchPrompt;
   final String switchLabel;
   final VoidCallback onSwitch;
+  final VoidCallback? onPasswordReset;
+  final bool isSendingReset;
   final String? errorMessage;
+  final String? successMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -91,21 +97,20 @@ class AuthScreenLayout extends StatelessWidget {
                           ),
                           const SizedBox(height: 28.0),
                           if (errorMessage != null) ...[
-                            Container(
-                              padding: const EdgeInsets.all(12.0),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFFF0ED),
-                                borderRadius: BorderRadius.circular(10.0),
-                                border: Border.all(
-                                  color: const Color(0xFFE8B4AA),
-                                ),
-                              ),
-                              child: Text(
-                                errorMessage!,
-                                style: const TextStyle(
-                                  color: Color(0xFF9B2C20),
-                                ),
-                              ),
+                            _messageBox(
+                              message: errorMessage!,
+                              backgroundColor: const Color(0xFFFFF0ED),
+                              borderColor: const Color(0xFFE8B4AA),
+                              textColor: const Color(0xFF9B2C20),
+                            ),
+                            const SizedBox(height: 16.0),
+                          ],
+                          if (successMessage != null) ...[
+                            _messageBox(
+                              message: successMessage!,
+                              backgroundColor: const Color(0xFFEDF8EF),
+                              borderColor: const Color(0xFFA8D5AF),
+                              textColor: const Color(0xFF256334),
                             ),
                             const SizedBox(height: 16.0),
                           ],
@@ -131,7 +136,26 @@ class AuthScreenLayout extends StatelessWidget {
                               icon: Icons.lock_outline,
                             ),
                           ),
-                          const SizedBox(height: 24.0),
+                          if (onPasswordReset != null) ...[
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: TextButton(
+                                onPressed: isSendingReset
+                                    ? null
+                                    : onPasswordReset,
+                                child: isSendingReset
+                                    ? const SizedBox(
+                                        width: 18.0,
+                                        height: 18.0,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2.0,
+                                        ),
+                                      )
+                                    : const Text('Forgot password?'),
+                              ),
+                            ),
+                          ],
+                          const SizedBox(height: 16.0),
                           SizedBox(
                             height: 56.0,
                             child: ElevatedButton(
@@ -179,6 +203,23 @@ class AuthScreenLayout extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+
+  static Widget _messageBox({
+    required String message,
+    required Color backgroundColor,
+    required Color borderColor,
+    required Color textColor,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12.0),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(10.0),
+        border: Border.all(color: borderColor),
+      ),
+      child: Text(message, style: TextStyle(color: textColor)),
     );
   }
 

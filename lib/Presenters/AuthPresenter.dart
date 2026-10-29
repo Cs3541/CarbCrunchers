@@ -13,6 +13,10 @@ class AuthPresenter {
     return _authModel.signUp(email, password);
   }
 
+  Future<String?> resetPassword(String email) {
+    return _authModel.resetPassword(email);
+  }
+
   Future<void> signOut() => _authModel.signOut();
 
   Stream<User?> authStateChanges() => _authModel.authStateChanges();

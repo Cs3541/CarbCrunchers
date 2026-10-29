@@ -17,8 +17,14 @@ class _LoginScreenState extends State<LoginScreen> {
   final _presenter = AuthPresenter();
 
   String? _errorMessage;
+  String? _successMessage;
+  bool _isSendingReset = false;
 
   Future<void> handleLogin() async {
+    setState(() {
+      _errorMessage = null;
+      _successMessage = null;
+    });
     final error = await _presenter.login(
       emailController.text.trim(),
       passwordController.text.trim(),
@@ -30,6 +36,35 @@ class _LoginScreenState extends State<LoginScreen> {
     } else {
       Navigator.popUntil(context, (route) => route.isFirst);
     }
+  }
+
+  Future<void> handlePasswordReset() async {
+    final email = emailController.text.trim();
+    if (email.isEmpty) {
+      setState(() {
+        _errorMessage = 'Enter your email address to reset your password.';
+        _successMessage = null;
+      });
+      return;
+    }
+
+    setState(() {
+      _errorMessage = null;
+      _successMessage = null;
+      _isSendingReset = true;
+    });
+
+    final error = await _presenter.resetPassword(email);
+
+    if (!mounted) return;
+    setState(() {
+      _isSendingReset = false;
+      if (error != null) {
+        _errorMessage = error;
+      } else {
+        _successMessage = 'If an account exists for that email, a password reset link will be sent.';
+      }
+    });
   }
 
   @override
@@ -48,6 +83,8 @@ class _LoginScreenState extends State<LoginScreen> {
       passwordController: passwordController,
       submitLabel: 'Login',
       onSubmit: handleLogin,
+      onPasswordReset: handlePasswordReset,
+      isSendingReset: _isSendingReset,
       switchPrompt: "Don't have an account?",
       switchLabel: 'Sign up',
       onSwitch: () {
@@ -57,6 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       },
       errorMessage: _errorMessage,
+      successMessage: _successMessage,
     );
   }
 }

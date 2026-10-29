@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'login.dart';
 import 'Presenters/AuthPresenter.dart';
+import 'widgets/auth_screen_layout.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -40,43 +41,22 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Signup'),
-        automaticallyImplyLeading: false,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            if (_errorMessage != null)
-              Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
-            TextField(
-              controller: emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
-            ),
-            TextField(
-              controller: passwordController,
-              decoration: const InputDecoration(labelText: 'Password'),
-              obscureText: true,
-            ),
-            const SizedBox(height: 20.0),
-            ElevatedButton(
-              onPressed: handleSignup,
-              child: const Text('Signup'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LoginScreen()),
-                );
-              },
-              child: const Text('Already have an account? Login'),
-            ),
-          ],
-        ),
-      ),
+    return AuthScreenLayout(
+      title: 'Create your account',
+      description: 'Set up your profile to get started.',
+      emailController: emailController,
+      passwordController: passwordController,
+      submitLabel: 'Sign up',
+      onSubmit: handleSignup,
+      switchPrompt: 'Already have an account?',
+      switchLabel: 'Login',
+      onSwitch: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );
+      },
+      errorMessage: _errorMessage,
     );
   }
 }

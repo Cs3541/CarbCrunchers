@@ -1,6 +1,6 @@
-import '../models/auth_model.dart';
-
 import 'package:firebase_auth/firebase_auth.dart';
+
+import '../Models/auth_model.dart';
 
 class AuthPresenter {
   AuthModel? _authModel;

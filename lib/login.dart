@@ -32,6 +32,30 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> handlePasswordReset() async {
+    final email = emailController.text.trim();
+    if (email.isEmpty) {
+      setState(() => _errorMessage = 'Enter your email address first.');
+      return;
+    }
+
+    setState(() => _errorMessage = null);
+    final error = await _presenter.sendPasswordResetEmail(email);
+    if (!mounted) return;
+
+    if (error != null) {
+      setState(() => _errorMessage = error);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'If an account exists for this email, a password reset email has been sent.',
+          ),
+        ),
+      );
+    }
+  }
+
   @override
   void dispose() {
     emailController.dispose();
@@ -48,6 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
       passwordController: passwordController,
       submitLabel: 'Login',
       onSubmit: handleLogin,
+      onPasswordReset: handlePasswordReset,
       switchPrompt: "Don't have an account?",
       switchLabel: 'Sign up',
       onSwitch: () {

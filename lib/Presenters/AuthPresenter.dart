@@ -1,6 +1,6 @@
-import '../models/auth_model.dart';
-
 import 'package:firebase_auth/firebase_auth.dart';
+
+import '../Models/auth_model.dart';
 
 class AuthPresenter {
   final AuthModel _authModel = AuthModel();
@@ -11,6 +11,10 @@ class AuthPresenter {
 
   Future<String?> signUp(String email, String password) async {
     return _authModel.signUp(email, password);
+  }
+
+  Future<String?> sendPasswordResetEmail(String email) {
+    return _authModel.sendPasswordResetEmail(email);
   }
 
   Future<void> signOut() => _authModel.signOut();

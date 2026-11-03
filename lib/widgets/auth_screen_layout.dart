@@ -11,6 +11,7 @@ class AuthScreenLayout extends StatelessWidget {
     required this.switchPrompt,
     required this.switchLabel,
     required this.onSwitch,
+    this.onPasswordReset,
     this.errorMessage,
     super.key,
   });
@@ -24,6 +25,7 @@ class AuthScreenLayout extends StatelessWidget {
   final String switchPrompt;
   final String switchLabel;
   final VoidCallback onSwitch;
+  final VoidCallback? onPasswordReset;
   final String? errorMessage;
 
   @override
@@ -131,6 +133,14 @@ class AuthScreenLayout extends StatelessWidget {
                               icon: Icons.lock_outline,
                             ),
                           ),
+                          if (onPasswordReset != null)
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: TextButton(
+                                onPressed: onPasswordReset,
+                                child: const Text('Forgot password?'),
+                              ),
+                            ),
                           const SizedBox(height: 24.0),
                           SizedBox(
                             height: 56.0,

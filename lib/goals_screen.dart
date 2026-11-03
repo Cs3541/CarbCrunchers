@@ -82,6 +82,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
     final proteinPercent = 35 / saved['Daily protein (g)']! * 100;
 
     return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 247, 231, 206),
       appBar: AppBar(
         title: const Text('My Goals'),
       ),

@@ -26,6 +26,7 @@ class _RecipePageState extends State<RecipePage> {
     final steps = recipe.steps ?? [];
 
     return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 247, 231, 206),
       body: CustomScrollView(
         slivers: [
           SliverAppBar(

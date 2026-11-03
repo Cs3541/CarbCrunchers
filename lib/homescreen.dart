@@ -5,6 +5,7 @@ import 'goals_screen.dart';
 import 'Presenters/AuthPresenter.dart';
 import 'browserecipes.dart';
 import 'login.dart';
+import 'views/meal_plan_view.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -170,7 +171,7 @@ class HomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16.0),
 
-              
+
               ElevatedButton(
                 onPressed: () {
                   Navigator.push(

@@ -63,6 +63,7 @@ class _BrowseRecipiesState extends State<BrowseRecipiesScreen> {
   Widget build(BuildContext context) {
     // app bar with title "My Recipes" and a back button
     return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 247, 231, 206),
       appBar: AppBar(
         title: const Text('Browse Recipes'),
         leading: IconButton(

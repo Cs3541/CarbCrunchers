@@ -97,9 +97,12 @@ class _GoalsScreenState extends State<GoalsScreen> {
 
           DropdownButtonFormField<String>(
             initialValue: goal,
+            dropdownColor: Colors.white,
             decoration: const InputDecoration(
               labelText: 'Goal focus',
               border: OutlineInputBorder(),
+              filled: true,
+              fillColor: Colors.white,
             ),
             items: const [
               DropdownMenuItem(
@@ -137,6 +140,8 @@ class _GoalsScreenState extends State<GoalsScreen> {
                 decoration: InputDecoration(
                   labelText: field.key,
                   border: const OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.white,
                 ),
               ),
             );

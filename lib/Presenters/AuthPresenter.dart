@@ -3,22 +3,24 @@ import '../models/auth_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthPresenter {
-  final AuthModel _authModel = AuthModel();
+  AuthModel? _authModel;
+
+  AuthModel get _model => _authModel ??= AuthModel();
 
   Future<String?> signIn(String email, String password) async {
-    return _authModel.signIn(email, password);
+    return _model.signIn(email, password);
   }
 
   Future<String?> signUp(String email, String password) async {
-    return _authModel.signUp(email, password);
+    return _model.signUp(email, password);
   }
 
-  Future<void> signOut() => _authModel.signOut();
+  Future<void> signOut() => _model.signOut();
 
-  Stream<User?> authStateChanges() => _authModel.authStateChanges();
+  Stream<User?> authStateChanges() => _model.authStateChanges();
 
-  Stream<User?> get user => _authModel.authStateChanges();
-  User? get currentUser => _authModel.currentUser;
+  Stream<User?> get user => _model.authStateChanges();
+  User? get currentUser => _model.currentUser;
 
   Future<String?> login(String email, String password) {
     return signIn(email, password);

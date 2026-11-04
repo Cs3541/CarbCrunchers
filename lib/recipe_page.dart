@@ -22,10 +22,11 @@ class _RecipePageState extends State<RecipePage> {
   Widget build(BuildContext context) {
     final recipe = widget.recipe;
     final theme = Theme.of(context);
-    final ingredients = recipe.ingredients ?? [];
+    final ingredients = recipe.ingredients;
     final steps = recipe.steps ?? [];
 
     return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 247, 231, 206),
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -38,7 +39,7 @@ class _RecipePageState extends State<RecipePage> {
                       recipe.imageURL!,
                       fit: BoxFit.cover,
                       cacheWidth: 1000,
-                      errorBuilder: (_, __, ___) => _imagePlaceholder(),
+                      errorBuilder: (_, _, _) => _imagePlaceholder(),
                     ),
             ),
           ),

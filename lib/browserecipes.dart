@@ -17,7 +17,7 @@ class BrowseRecipiesScreen extends StatefulWidget {
 class _BrowseRecipiesState extends State<BrowseRecipiesScreen> {
   BrowseRecipiesState _state = BrowseRecipiesState.loading;
 
-  Map<RecipeCategory, List<Recipe>> _recipes = {};
+  final Map<RecipeCategory, List<Recipe>> _recipes = {};
   final Map<RecipeCategory, DocumentSnapshot?> _lastDoc = {};
   final Set<RecipeCategory> _loading = {};
   final Set<RecipeCategory> _done = {};
@@ -63,6 +63,7 @@ class _BrowseRecipiesState extends State<BrowseRecipiesScreen> {
   Widget build(BuildContext context) {
     // app bar with title "My Recipes" and a back button
     return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 247, 231, 206),
       appBar: AppBar(
         title: const Text('Browse Recipes'),
         leading: IconButton(

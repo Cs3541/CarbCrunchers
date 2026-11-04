@@ -82,6 +82,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
     final proteinPercent = 35 / saved['Daily protein (g)']! * 100;
 
     return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 247, 231, 206),
       appBar: AppBar(
         title: const Text('My Goals'),
       ),
@@ -96,9 +97,12 @@ class _GoalsScreenState extends State<GoalsScreen> {
 
           DropdownButtonFormField<String>(
             initialValue: goal,
+            dropdownColor: Colors.white,
             decoration: const InputDecoration(
               labelText: 'Goal focus',
               border: OutlineInputBorder(),
+              filled: true,
+              fillColor: Colors.white,
             ),
             items: const [
               DropdownMenuItem(
@@ -136,6 +140,8 @@ class _GoalsScreenState extends State<GoalsScreen> {
                 decoration: InputDecoration(
                   labelText: field.key,
                   border: const OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.white,
                 ),
               ),
             );

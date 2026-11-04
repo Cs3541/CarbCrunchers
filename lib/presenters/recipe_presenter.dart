@@ -3,6 +3,7 @@ import '../models/category_model.dart';
 
 class RecipePresenter {
   final List<Recipe> _recipes = [];
+  
   List<Recipe> get recipes => _recipes;
 
   Future<void> fetchRecipesByCategory(RecipeCategory category) async {

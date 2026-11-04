@@ -22,10 +22,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
   //Controllers to allow for variable number of ingredients/steps/nutrition information to be added to the recipe
   final ingredientControllers = <TextEditingController>[];
   final stepControllers = <TextEditingController>[];
-  final nutritionControllers =
-      <
-        TextEditingController
-      >[]; //Has a set number of fields and labels but can always add more
+  final nutritionControllers = <TextEditingController>[]; //Has a set number of fields and labels but can always add more
   final List<String> nutritionLabels = [
     'Calories',
     'Carbs',
@@ -36,6 +33,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
     'Sugar',
   ];
 
+  //When loading the screen, fetches the user's recipes from the database
   @override
   void initState() {
     super.initState();
@@ -51,7 +49,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
     });
   }
 
-  //Dialog to edit a recipe
+  //Shows a pop-up dialog to edit a recipe
   void _showEditRecipeDialog(Recipe recipe) {
     String recipeTitle = recipe.title;
     String? description = recipe.description;
@@ -71,7 +69,8 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
           content: SingleChildScrollView(
             child: Column(
               children: [
-                //Recipe Title
+
+                //Promts the user to add a title for the recipe, which is required to save the recipe
                 TextField(
                   decoration: const InputDecoration(labelText: 'Recipe Title'),
                   onChanged: (value) {
@@ -79,7 +78,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                   },
                 ),
 
-                //Recipe Description
+                //Promts the user to add a description for the recipe, which is optional
                 TextField(
                   decoration: const InputDecoration(
                     labelText: 'Description',
@@ -91,7 +90,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                   },
                 ),
 
-                //Recipe Servings
+                //Promts the user to add the number of servings for the recipe, which is optional
                 TextField(
                   decoration: const InputDecoration(
                     labelText: 'Servings',
@@ -103,7 +102,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                   },
                 ),
 
-                //Recipe Cook Time
+                //Prompts the user to add the cook time for the recipe, which is optional
                 TextField(
                   decoration: const InputDecoration(
                     labelText: 'Cook Time (minutes)',
@@ -115,7 +114,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                   },
                 ),
 
-                //Recipe Keywords
+                //Prompts the user to add keywords for the recipe, which is optional
                 TextField(
                   decoration: const InputDecoration(
                     labelText: 'Keywords',
@@ -126,7 +125,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                   },
                 ),
 
-                //ImageURL
+                //Prompts the user to add an image URL for the recipe, which is optional
                 TextField(
                   decoration: const InputDecoration(
                     labelText: 'Image URL',
@@ -137,7 +136,8 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                   },
                 ),
 
-                //Ingredients
+                //Prompts the user to add ingredients for the recipe, which is optional
+                //Can generate a variable number of buttons by adding and diposing TextEditingControllers
                 Column(
                   children: [
                     for (var i = 0; i < ingredientControllers.length; i++)
@@ -176,7 +176,8 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                   ],
                 ),
 
-                //Recipe Steps
+                //Prompts the user to add recipe steps, which are optional
+                //Can generate a variable number of buttons by adding and diposing TextEditingControllers  
                 Column(
                   children: [
                     for (var i = 0; i < stepControllers.length; i++)
@@ -216,9 +217,11 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                 ),
 
                 //Nutrition Information
+                //Can generate a variable number of buttons by adding and diposing TextEditingControllers. Nutritional Information
+                //Currently has a maximum number of fields that the user can create
                 Column(
                   children: [
-                    for (var i = 1; i < nutritionLabels.length && i < 1; i++)
+                    for (var i = 1; i < nutritionLabels.length; i++)
                       Row(
                         children: [
                           Expanded(
@@ -258,7 +261,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
             ),
             ElevatedButton(
               onPressed: () async {
-                if (recipeTitle.isNotEmpty) {
+                if (recipeTitle.isNotEmpty) {       //If the user inputted a title for the recipe which is requiered, the recipe is inputted into the users data
                   final updatedRecipe = Recipe(
                     title: recipeTitle,
                     description: description,
@@ -280,6 +283,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                     }
                     if (_selectedRecipes.remove(recipe)) {
                       _selectedRecipes.add(updatedRecipe);
+                      _recipePresenter.addUserRecipe(updatedRecipe);
                     }
                   });
                 }
@@ -548,6 +552,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                     cooktime: cooktime,
                     servings: servings,
                   );
+                  _recipePresenter.addUserRecipe(newRecipe);
                   Navigator.of(context).pop();
                   setState(() {
                     _myRecipes.add(newRecipe);
@@ -671,5 +676,3 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
     );
   }
 }
-
-//////TESTING CODE BELOW

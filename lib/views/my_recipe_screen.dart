@@ -23,10 +23,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
   //Controllers to allow for variable number of ingredients/steps/nutrition information to be added to the recipe
   final ingredientControllers = <TextEditingController>[];
   final stepControllers = <TextEditingController>[];
-  final nutritionControllers =
-      <
-        TextEditingController
-      >[]; //Has a set number of fields and labels but can always add more
+  final nutritionControllers = <TextEditingController>[]; //Has a set number of fields and labels but can always add more
   final List<String> nutritionLabels = [
     'Calories',
     'Carbs',
@@ -301,11 +298,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Delete selected recipes'),
-          content: Text(
-            'Are you sure you want to delete ${selectedRecipes.length} '
-            'selected ${selectedRecipes.length == 1 ? 'recipe' : 'recipes'}?',
-          ),
+          title: const Text('Delete selected recipe(s)?'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
@@ -320,14 +313,28 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
       },
     );
 
-    if (confirmed != true || !mounted) return;
-
     for (final recipe in selectedRecipes) {
-        await _recipePresenter.deleteUserRecipe(recipe);
-        setState(() {
+        final originalIndex = _myRecipes.indexOf(recipe);
+
+         setState(() {
           _myRecipes.remove(recipe);
           _selectedRecipes.remove(recipe);
         });
+
+      try {
+      await _recipePresenter.deleteUserRecipe(recipe);
+      } catch (error) {
+        if (!mounted) return;
+
+        // Restore the recipe if the delete request failed.
+        setState(() {
+          _myRecipes.insert(originalIndex, recipe);
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not delete recipe: $error')),
+        );
+      }
     }
   }
 
@@ -417,112 +424,90 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                 ),
 
                 //Ingredients
-                Column(
-                  children: [
-                    for (var i = 0; i < ingredientControllers.length; i++)
-                      Row(
+                StatefulBuilder(
+                  builder: (context, setDialogState) {
+                    return SingleChildScrollView(
+                      child: Column(
                         children: [
-                          Expanded(
-                            child: SizedBox(
-                              height: 40,
-                              child: TextField(
-                                controller: ingredientControllers[i],
-                                decoration: InputDecoration(
-                                  labelText: 'Ingredient ${i + 1}',
-                                ),
+                          for (var i = 0; i < ingredientControllers.length; i++)
+                            TextField(
+                              controller: ingredientControllers[i],
+                              decoration: InputDecoration(
+                                labelText: 'Ingredient ${i+1}: ',
+                                hintText: 'Ingredient Goes Here!'
                               ),
                             ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.remove_circle_outline),
+                          TextButton.icon(
                             onPressed: () {
-                              setState(() {
-                                ingredientControllers.removeAt(i).dispose();
+                              setDialogState(() {
+                                ingredientControllers.add(TextEditingController());
                               });
                             },
+                            icon: const Icon(Icons.add),
+                            label: const Text('Add ingredient'),
                           ),
                         ],
                       ),
-                    TextButton.icon(
-                      onPressed: () {
-                        setState(() {
-                          ingredientControllers.add(TextEditingController());
-                        });
-                      },
-                      icon: const Icon(Icons.add),
-                      label: const Text('Add ingredient'),
-                    ),
-                  ],
+                    );
+                  },
                 ),
 
                 //Recipe Steps
-                Column(
-                  children: [
-                    for (var i = 0; i < stepControllers.length; i++)
-                      Row(
+                StatefulBuilder(
+                  builder: (context, setDialogState) {
+                    return SingleChildScrollView(
+                      child: Column(
                         children: [
-                          Expanded(
-                            child: SizedBox(
-                              height: 40,
-                              child: TextField(
-                                controller: stepControllers[i],
-                                decoration: InputDecoration(
-                                  labelText: 'Recipe Step ${i + 1}',
-                                ),
+                          for (var i = 0; i < stepControllers.length; i++)
+                            TextField(
+                              controller: stepControllers[i],
+                              decoration: InputDecoration(
+                                labelText: 'Recipe Step ${i+1}: ',
+                                hintText: 'Input a Recipe Step!',
                               ),
                             ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.remove_circle_outline),
+                          TextButton.icon(
                             onPressed: () {
-                              setState(() {
-                                stepControllers.removeAt(i).dispose();
+                              setDialogState(() {
+                                stepControllers.add(TextEditingController());
                               });
                             },
+                            icon: const Icon(Icons.add),
+                            label: const Text('Add Recipe Steps'),
                           ),
                         ],
                       ),
-                    TextButton.icon(
-                      onPressed: () {
-                        setState(() {
-                          stepControllers.add(TextEditingController());
-                        });
-                      },
-                      icon: const Icon(Icons.add),
-                      label: const Text('Add Recipe Step'),
-                    ),
-                  ],
+                    );
+                  },
                 ),
 
                 //Nutrition Information
-                Column(
-                  children: [
-                    for (var i = 1; i < nutritionLabels.length && i < 1; i++)
-                      Row(
+                StatefulBuilder(
+                  builder: (context, setDialogState) {
+                    return SingleChildScrollView(
+                      child: Column(
                         children: [
-                          Expanded(
-                            child: SizedBox(
-                              height: 40,
-                              child: TextField(
-                                controller: nutritionControllers[i],
-                                decoration: InputDecoration(
-                                  labelText: nutritionLabels[i],
-                                ),
+                          for (var i = 0; i < nutritionControllers.length && i < 7; i++)
+                            TextField(
+                              controller: nutritionControllers[i],
+                              decoration: InputDecoration(
+                                labelText: nutritionLabels[i],
+                                hintText: 'Input the ${nutritionLabels[i]}',
                               ),
                             ),
+                          TextButton.icon(
+                            onPressed: () {
+                              setDialogState(() {
+                                nutritionControllers.add(TextEditingController());
+                              });
+                            },
+                            icon: const Icon(Icons.add),
+                            label: const Text('Add Recipe Nutrition'),
                           ),
                         ],
                       ),
-                    TextButton.icon(
-                      onPressed: () {
-                        setState(() {
-                          nutritionControllers.add(TextEditingController());
-                        });
-                      },
-                      icon: const Icon(Icons.add),
-                      label: const Text('Add Nutrition Information'),
-                    ),
-                  ],
+                    );
+                  },
                 ),
 
               ],

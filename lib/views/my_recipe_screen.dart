@@ -136,112 +136,90 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                 ),
 
                 //Ingredients
-                Column(
-                  children: [
-                    for (var i = 0; i < ingredientControllers.length; i++)
-                      Row(
+                StatefulBuilder(
+                  builder: (context, setDialogState) {
+                    return SingleChildScrollView(
+                      child: Column(
                         children: [
-                          Expanded(
-                            child: SizedBox(
-                              height: 40,
-                              child: TextField(
-                                controller: ingredientControllers[i],
-                                decoration: InputDecoration(
-                                  labelText: 'Ingredient ${i + 1}',
-                                ),
+                          for (var i = 0; i < ingredientControllers.length; i++)
+                            TextField(
+                              controller: ingredientControllers[i],
+                              decoration: InputDecoration(
+                                labelText: 'Ingredient ${i+1}: ',
+                                hintText: 'Ingredient Goes Here!'
                               ),
                             ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.remove_circle_outline),
+                          TextButton.icon(
                             onPressed: () {
-                              setState(() {
-                                ingredientControllers.removeAt(i).dispose();
+                              setDialogState(() {
+                                ingredientControllers.add(TextEditingController());
                               });
                             },
+                            icon: const Icon(Icons.add),
+                            label: const Text('Add ingredient'),
                           ),
                         ],
                       ),
-                    TextButton.icon(
-                      onPressed: () {
-                        setState(() {
-                          ingredientControllers.add(TextEditingController());
-                        });
-                      },
-                      icon: const Icon(Icons.add),
-                      label: const Text('Add ingredient'),
-                    ),
-                  ],
+                    );
+                  },
                 ),
 
                 //Recipe Steps
-                Column(
-                  children: [
-                    for (var i = 0; i < stepControllers.length; i++)
-                      Row(
+                StatefulBuilder(
+                  builder: (context, setDialogState) {
+                    return SingleChildScrollView(
+                      child: Column(
                         children: [
-                          Expanded(
-                            child: SizedBox(
-                              height: 40,
-                              child: TextField(
-                                controller: stepControllers[i],
-                                decoration: InputDecoration(
-                                  labelText: 'Recipe Step ${i + 1}',
-                                ),
+                          for (var i = 0; i < stepControllers.length; i++)
+                            TextField(
+                              controller: stepControllers[i],
+                              decoration: InputDecoration(
+                                labelText: 'Recipe Step ${i+1}: ',
+                                hintText: 'Input a Recipe Step!',
                               ),
                             ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.remove_circle_outline),
+                          TextButton.icon(
                             onPressed: () {
-                              setState(() {
-                                stepControllers.removeAt(i).dispose();
+                              setDialogState(() {
+                                stepControllers.add(TextEditingController());
                               });
                             },
+                            icon: const Icon(Icons.add),
+                            label: const Text('Add Recipe Steps'),
                           ),
                         ],
                       ),
-                    TextButton.icon(
-                      onPressed: () {
-                        setState(() {
-                          stepControllers.add(TextEditingController());
-                        });
-                      },
-                      icon: const Icon(Icons.add),
-                      label: const Text('Add Recipe Step'),
-                    ),
-                  ],
+                    );
+                  },
                 ),
 
                 //Nutrition Information
-                Column(
-                  children: [
-                    for (var i = 1; i < nutritionLabels.length && i < 1; i++)
-                      Row(
+                StatefulBuilder(
+                  builder: (context, setDialogState) {
+                    return SingleChildScrollView(
+                      child: Column(
                         children: [
-                          Expanded(
-                            child: SizedBox(
-                              height: 40,
-                              child: TextField(
-                                controller: nutritionControllers[i],
-                                decoration: InputDecoration(
-                                  labelText: nutritionLabels[i],
-                                ),
+                          for (var i = 0; i < nutritionControllers.length && i < 7; i++)
+                            TextField(
+                              controller: nutritionControllers[i],
+                              decoration: InputDecoration(
+                                labelText: nutritionLabels[i],
+                                hintText: 'Input the ${nutritionLabels[i]}',
                               ),
                             ),
+                          TextButton.icon(
+                            onPressed: () {
+                              setDialogState(() {
+                                nutritionControllers.add(TextEditingController());
+                              });
+                            },
+                            icon: const Icon(Icons.add),
+                            label: const Text('Add Recipe Nutrition'),
                           ),
                         ],
                       ),
-                    TextButton.icon(
-                      onPressed: () {
-                        setState(() {
-                          nutritionControllers.add(TextEditingController());
-                        });
-                      },
-                      icon: const Icon(Icons.add),
-                      label: const Text('Add Nutrition Information'),
-                    ),
-                  ],
+                    );
+                  },
                 ),
                 
               ],

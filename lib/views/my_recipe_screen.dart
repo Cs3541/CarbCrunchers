@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../models/recipe_model.dart';
-import '../presenters/recipe_presenter.dart';
-import '../models/step_model.dart';
-import '../models/ingredient_model.dart';
-import '../models/nutrition_model.dart';
+import '../../models/recipe_model.dart';
+import '../../presenters/recipe_presenter.dart';
+import '../../models/step_model.dart';
+import '../../models/ingredient_model.dart';
+import '../../models/nutrition_model.dart';
 
 class MyRecipeScreen extends StatefulWidget {
   const MyRecipeScreen({super.key});

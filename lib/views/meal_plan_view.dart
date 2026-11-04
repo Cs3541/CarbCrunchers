@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/meal_plan_model.dart';
 import '../presenters/meal_plan_presenter.dart';
 import '../models/recipe_model.dart';
-import '../recipe_page.dart';
+import 'recipe_page.dart';
 
 class MyMealsScreen extends StatefulWidget {
   const MyMealsScreen({super.key});
@@ -156,9 +156,13 @@ class _MyMealsScreenState extends State<MyMealsScreen> {
                       .map<DropdownMenuItem<String>>(
                         (rec) => DropdownMenuItem<String>(
                           value: rec['id'],
-                          child: Text(rec['title']!),
+                          child: Text(
+                            rec['title']!,
+                            overflow: TextOverflow.ellipsis,
+                            ),
                       ),)
                       .toList(),
+                    isExpanded: true,
                     onChanged: (val) =>
                         setModalState(() => selectedRecipeId = val),
                   ),

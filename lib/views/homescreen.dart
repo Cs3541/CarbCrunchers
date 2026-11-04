@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 
 import 'goals_screen.dart';
 
-import 'Presenters/AuthPresenter.dart';
+import '../Presenters/AuthPresenter.dart';
 import 'browserecipes.dart';
 import 'login.dart';
 import 'my_recipe_screen.dart';
-import 'views/meal_plan_view.dart';
+import 'meal_plan_view.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});

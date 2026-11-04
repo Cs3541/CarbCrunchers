@@ -3,7 +3,7 @@ import 'package:carb_cruncher/models/recipe_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-import './widgets/browse/category_section.dart';
+import '../widgets/browse/category_section.dart';
 
 enum BrowseRecipiesState { loading, loaded, error }
 

@@ -29,6 +29,6 @@ class RecipePresenter {
 
   Future<void> deleteUserRecipe(Recipe recipe) async {
     await Recipe.deleteUserRecipe(recipe);
-    _recipes.removeWhere((r) => r.id == recipe.id);
+    _recipes.removeWhere((r) => r.title == recipe.title);
   }
 }

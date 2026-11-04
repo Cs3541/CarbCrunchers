@@ -149,11 +149,7 @@ class Recipe {
   }
 
   static Future<void> deleteUserRecipe(Recipe recipe) async {
-    final recipeId = recipe.id;
-    if (recipeId == null) {
-      throw StateError('Cannot delete a saved recipe without its document ID.');
-    }
-
+    final recipeId = recipe.title;
     await _firestore.collection('SavedRecipes').doc(recipeId).delete();
   }
 }

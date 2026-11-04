@@ -1,6 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../models/meal_plan_model.dart';
 import '../presenters/meal_plan_presenter.dart';
+import '../models/recipe_model.dart';
 import '../recipe_page.dart';
 
 class MyMealsScreen extends StatefulWidget {
@@ -52,6 +54,156 @@ class _MyMealsScreenState extends State<MyMealsScreen> {
       grouped[dayName]?.add(meal);
     }
     return grouped;
+  }
+
+  // Fetch available recipes from Firestore for the dropdown
+  Future<List> _fetchAvailableRecipes() async {
+    final snapshot =
+        await FirebaseFirestore.instance.collection('recipes').get();
+    return snapshot.docs.map((doc) {
+      final data = doc.data();
+      return {
+        'id': doc.id,
+        'title': (data['title'] ?? 'Untitled Recipe').toString(),
+      };
+    }).toList();
+  }
+
+  // Add or Swap Dialog
+  void _showAddEditMealDialog({PlannedMeal? existingMeal}) async {
+    String selectedMealType = existingMeal?.mealType ?? 'Breakfast';
+    DateTime selectedDate = existingMeal?.date ?? _presenter.selectedWeekStart;
+    String? selectedRecipeId = existingMeal?.recipeId;
+
+    // Fetch existing recipes for dropdown selection
+    final availableRecipes = await _fetchAvailableRecipes();
+
+    if (!mounted) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+                top: 20,
+                left: 20,
+                right: 20,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    existingMeal == null ? 'Schedule a Meal' : 'Swap Meal',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 1. Meal Type Dropdown
+                  DropdownButtonFormField<String>(
+                    value: selectedMealType,
+                    decoration: const InputDecoration(labelText: 'Meal Slot'),
+                    items: ['Breakfast', 'Lunch', 'Dinner', 'Snack']
+                        .map((type) =>
+                            DropdownMenuItem(value: type, child: Text(type)))
+                        .toList(),
+                    onChanged: (val) =>
+                        setModalState(() => selectedMealType = val!),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // 2. Date Picker
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Date'),
+                    subtitle: Text(
+                        '${selectedDate.month}/${selectedDate.day}/${selectedDate.year}'),
+                    trailing: const Icon(Icons.calendar_today),
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: selectedDate,
+                        firstDate: DateTime(2020),
+                        lastDate: DateTime(2030),
+                      );
+                      if (picked != null) {
+                        setModalState(() => selectedDate = picked);
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 12),
+
+                  // 3. Recipe Dropdown (Pulls real recipes from database)
+                  DropdownButtonFormField<String>(
+                    value: availableRecipes
+                            .any((r) => r['id'] == selectedRecipeId)
+                        ? selectedRecipeId
+                        : null,
+                    decoration:
+                        const InputDecoration(labelText: 'Select Recipe'),
+                    hint: const Text('Choose a recipe'),
+                    items: availableRecipes
+                      .map<DropdownMenuItem<String>>(
+                        (rec) => DropdownMenuItem<String>(
+                          value: rec['id'],
+                          child: Text(rec['title']!),
+                      ),)
+                      .toList(),
+                    onChanged: (val) =>
+                        setModalState(() => selectedRecipeId = val),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Save Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1F5DA8),
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: () async {
+                        if (selectedRecipeId == null ||
+                            selectedRecipeId!.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Please select a Recipe'),
+                            ),
+                          );
+                          return;
+                        }
+
+                        Navigator.pop(context);
+
+                        await _presenter.savePlannedMeal(
+                          existingDocId: existingMeal?.id,
+                          mealType: selectedMealType,
+                          date: selectedDate,
+                          recipeId: selectedRecipeId!,
+                        );
+                      },
+                      child: Text(
+                        existingMeal == null ? 'Add to Plan' : 'Update / Swap',
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -106,6 +258,14 @@ class _MyMealsScreenState extends State<MyMealsScreen> {
           ],
         ),
       ),
+
+      // ADDED: Floating Action Button in Bottom Right Corner!
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color(0xFF1F5DA8),
+        onPressed: () => _showAddEditMealDialog(),
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
+
       body: StreamBuilder<List<PlannedMeal>>(
         stream: _presenter.mealsStream,
         builder: (context, snapshot) {
@@ -161,7 +321,6 @@ class _MyMealsScreenState extends State<MyMealsScreen> {
 
     return GestureDetector(
       onTap: () {
-        // Open RecipePage if recipe data exists
         if (recipe != null) {
           Navigator.push(
             context,
@@ -187,7 +346,7 @@ class _MyMealsScreenState extends State<MyMealsScreen> {
         ),
         child: Row(
           children: [
-            // Meal type vertical badge (Breakfast, Lunch, Dinner, Snack)
+            // Meal type vertical badge
             Container(
               width: 32,
               decoration: const BoxDecoration(
@@ -211,7 +370,7 @@ class _MyMealsScreenState extends State<MyMealsScreen> {
                 ),
               ),
             ),
-            // Recipe Thumbnail
+            // Recipe Image
             ClipRRect(
               child: recipe?.imageURL != null
                   ? Image.network(
@@ -224,7 +383,7 @@ class _MyMealsScreenState extends State<MyMealsScreen> {
                   : _imagePlaceholder(),
             ),
             const SizedBox(width: 12.0),
-            // Recipe Title and Sides
+            // Title and Sides
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 10.0),
@@ -257,7 +416,11 @@ class _MyMealsScreenState extends State<MyMealsScreen> {
                 ),
               ),
             ),
-            // Right Arrow Navigation Indicator
+            // Swap Button
+            IconButton(
+              icon: const Icon(Icons.swap_horiz, color: Colors.black54),
+              onPressed: () => _showAddEditMealDialog(existingMeal: meal),
+            ),
             const Icon(Icons.chevron_right, color: Colors.grey),
             const SizedBox(width: 12.0),
           ],

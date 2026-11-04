@@ -32,6 +32,22 @@ class MealPlanPresenter {
     _mealsController.sink.add(weekMeals);
   }
 
+  // Save/Update meal and refresh view
+  Future<void> savePlannedMeal({
+    String? existingDocId,
+    required String mealType,
+    required DateTime date,
+    required String recipeId,
+  }) async {
+    await PlannedMeal.addOrUpdateMeal(
+      existingDocId: existingDocId,
+      mealType: mealType,
+      date: date,
+      recipeId: recipeId,
+    );
+    await fetchMealsForWeek();
+  }
+
   // Change selected week forward (+1) or backward (-1)
   void changeWeek(int offsetWeeks) {
     selectedWeekStart = selectedWeekStart.add(Duration(days: offsetWeeks * 7));

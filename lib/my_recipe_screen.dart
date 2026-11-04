@@ -16,12 +16,16 @@ class MyRecipeScreen extends StatefulWidget {
 class _MyRecipeScreenState extends State<MyRecipeScreen> {
   final RecipePresenter _recipePresenter = RecipePresenter();
   List<Recipe> _myRecipes = [];
+  final Set<Recipe> _selectedRecipes = {};
   bool _isLoading = true;
 
   //Controllers to allow for variable number of ingredients/steps/nutrition information to be added to the recipe
   final ingredientControllers = <TextEditingController>[];
   final stepControllers = <TextEditingController>[];
-  final nutritionControllers = <TextEditingController>[]; //Has a set number of fields and labels but can always add more
+  final nutritionControllers =
+      <
+        TextEditingController
+      >[]; //Has a set number of fields and labels but can always add more
   final List<String> nutritionLabels = [
     'Calories',
     'Carbs',
@@ -29,7 +33,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
     'Fiber',
     'Protein',
     'Sodium (mg)',
-    'Sugar'
+    'Sugar',
   ];
 
   @override
@@ -37,7 +41,6 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
     super.initState();
     _fetchMyRecipes();
   }
-
 
   //Loads User Data
   Future<void> _fetchMyRecipes() async {
@@ -64,11 +67,10 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Add New Recipe'),
+          title: const Text('Edit Recipe'),
           content: SingleChildScrollView(
             child: Column(
               children: [
-
                 //Recipe Title
                 TextField(
                   decoration: const InputDecoration(labelText: 'Recipe Title'),
@@ -100,7 +102,9 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                               height: 40,
                               child: TextField(
                                 controller: ingredientControllers[i],
-                                decoration: InputDecoration(labelText: 'Ingredient ${i + 1}'),
+                                decoration: InputDecoration(
+                                  labelText: 'Ingredient ${i + 1}',
+                                ),
                               ),
                             ),
                           ),
@@ -137,7 +141,9 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                               height: 40,
                               child: TextField(
                                 controller: stepControllers[i],
-                                decoration: InputDecoration(labelText: 'Recipe Step ${i + 1}'),
+                                decoration: InputDecoration(
+                                  labelText: 'Recipe Step ${i + 1}',
+                                ),
                               ),
                             ),
                           ),
@@ -174,7 +180,9 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                               height: 40,
                               child: TextField(
                                 controller: nutritionControllers[i],
-                                decoration: InputDecoration(labelText: nutritionLabels[i]),
+                                decoration: InputDecoration(
+                                  labelText: nutritionLabels[i],
+                                ),
                               ),
                             ),
                           ),
@@ -237,7 +245,6 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                     imageURL = value;
                   },
                 ),
-
               ],
             ),
           ),
@@ -264,9 +271,14 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                   );
                   Navigator.of(context).pop();
                   setState(() {
-                    final index = _myRecipes.indexWhere((r) => r.title == recipe.title);
+                    final index = _myRecipes.indexWhere(
+                      (r) => r.title == recipe.title,
+                    );
                     if (index != -1) {
                       _myRecipes[index] = updatedRecipe;
+                    }
+                    if (_selectedRecipes.remove(recipe)) {
+                      _selectedRecipes.add(updatedRecipe);
                     }
                   });
                 }
@@ -279,34 +291,42 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
     );
   }
 
-  void _showDeleteRecipeDialog(Recipe recipe) {
-    showDialog(
+  Future<void> _deleteSelectedRecipes() async {
+    if (_selectedRecipes.isEmpty) return;
+
+    final selectedRecipes = _selectedRecipes.toList();
+    final confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Delete Recipe'),
-          content: const Text('Are you sure you want to delete this recipe?'),
+          title: const Text('Delete selected recipes'),
+          content: Text(
+            'Are you sure you want to delete ${selectedRecipes.length} '
+            'selected ${selectedRecipes.length == 1 ? 'recipe' : 'recipes'}?',
+          ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(false),
               child: const Text('Cancel'),
             ),
             ElevatedButton(
-              onPressed: () async {
-                Navigator.of(context).pop();
-                await _recipePresenter.deleteUserRecipe(recipe);
-                setState(() {
-                  _myRecipes.removeWhere((r) => r.title == recipe.title);
-                });
-              },
+              onPressed: () => Navigator.of(context).pop(true),
               child: const Text('Delete'),
             ),
           ],
         );
       },
     );
+
+    if (confirmed != true || !mounted) return;
+
+    for (final recipe in selectedRecipes) {
+        await _recipePresenter.deleteUserRecipe(recipe);
+        setState(() {
+          _myRecipes.remove(recipe);
+          _selectedRecipes.remove(recipe);
+        });
+    }
   }
 
   void _showAddRecipeDialog() {
@@ -328,7 +348,6 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
           content: SingleChildScrollView(
             child: Column(
               children: [
-
                 //Recipe Title
                 TextField(
                   decoration: const InputDecoration(labelText: 'Recipe Title'),
@@ -360,7 +379,9 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                               height: 40,
                               child: TextField(
                                 controller: ingredientControllers[i],
-                                decoration: InputDecoration(labelText: 'Ingredient ${i + 1}'),
+                                decoration: InputDecoration(
+                                  labelText: 'Ingredient ${i + 1}',
+                                ),
                               ),
                             ),
                           ),
@@ -397,7 +418,9 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                               height: 40,
                               child: TextField(
                                 controller: stepControllers[i],
-                                decoration: InputDecoration(labelText: 'Recipe Step ${i + 1}'),
+                                decoration: InputDecoration(
+                                  labelText: 'Recipe Step ${i + 1}',
+                                ),
                               ),
                             ),
                           ),
@@ -434,7 +457,9 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                               height: 40,
                               child: TextField(
                                 controller: nutritionControllers[i],
-                                decoration: InputDecoration(labelText: nutritionLabels[i]),
+                                decoration: InputDecoration(
+                                  labelText: nutritionLabels[i],
+                                ),
                               ),
                             ),
                           ),
@@ -497,7 +522,6 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                     imageURL = value;
                   },
                 ),
-
               ],
             ),
           ),
@@ -541,15 +565,27 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 247, 231, 206),
       appBar: AppBar(
-        title: const Text(
-          'My Recipes',
-        style: TextStyle(
-          fontSize: 28.0,
-          fontWeight: FontWeight.bold,
-          fontFamily: 'Homemade Apple',
-          color: Color(0xFFB45309),
+        title: Text(
+          _selectedRecipes.isEmpty
+              ? 'My Recipes'
+              : '${_selectedRecipes.length} selected',
+          style: const TextStyle(
+            fontSize: 28.0,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Homemade Apple',
+            color: Color(0xFFB45309),
           ),
         ),
+        actions: [
+          if (_selectedRecipes.isNotEmpty)
+            IconButton(
+              tooltip: 'Clear selection',
+              onPressed: () {
+                setState(_selectedRecipes.clear);
+              },
+              icon: const Icon(Icons.close),
+            ),
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -561,10 +597,29 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                   children: [
                     ListTile(
                       tileColor: const Color.fromARGB(255, 247, 231, 206),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                        vertical: 10.0,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10.0),
-                        side: const BorderSide(color: Color(0xFFB45309), width: 2.0),
+                        side: const BorderSide(
+                          color: Color(0xFFB45309),
+                          width: 2.0,
+                        ),
+                      ),
+                      leading: Checkbox(
+                        value: _selectedRecipes.contains(recipe),
+                        activeColor: const Color(0xFFB45309),
+                        onChanged: (selected) {
+                          setState(() {
+                            if (selected == true) {
+                              _selectedRecipes.add(recipe);
+                            } else {
+                              _selectedRecipes.remove(recipe);
+                            }
+                          });
+                        },
                       ),
                       title: Text(recipe.title),
                       titleTextStyle: const TextStyle(
@@ -581,13 +636,11 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                         tooltip: 'Edit Recipe',
                         backgroundColor: const Color(0xFFB45309),
                         mini: true,
+                        heroTag: 'editRecipe-${recipe.id ?? index}',
                         onPressed: () {
                           _showEditRecipeDialog(recipe);
                         },
-                        child: const Icon(
-                          Icons.edit,
-                          color: Colors.white,
-                        ),
+                        child: const Icon(Icons.edit, color: Colors.white),
                       ),
                     ),
                     const SizedBox(height: 10.0),
@@ -600,15 +653,21 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
         children: [
           FloatingActionButton(
             onPressed: _showAddRecipeDialog,
+            heroTag: 'addRecipe',
             child: const Icon(Icons.add),
           ),
-          const SizedBox(height: 12.0),
-          FloatingActionButton(
-            onPressed: () =>_showDeleteRecipeDialog,
-            child: const Icon(Icons.delete),
-          ),
+            const SizedBox(height: 12.0),
+            FloatingActionButton.extended(
+              onPressed: _deleteSelectedRecipes,
+              heroTag: 'deleteSelectedRecipes',
+              icon: const Icon(Icons.delete),
+              label: Text('Delete'),
+            ),
+          ],
         ],
       ),
-   );
+    );
   }
 }
+
+//////TESTING CODE BELOW

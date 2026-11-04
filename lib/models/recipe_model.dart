@@ -136,29 +136,24 @@ class Recipe {
       'userId': userId,
       'title': recipe.title,
       'Description': recipe.description?.trim(),
-      'ingredients': recipe.ingredients.map((ingredient) => ingredient.toMap()).toList(),
+      'ingredients': recipe.ingredients
+          .map((ingredient) => ingredient.toMap())
+          .toList(),
       'image_url': recipe.imageURL,
       'steps': recipe.steps,
       'keywords': recipe.keywords,
       'nutrition': recipe.nutrition?.toMap(),
-      'cook_time_sec': recipe.cooktime != null ? recipe.cooktime! *
-  60 : null,
+      'cook_time_sec': recipe.cooktime != null ? recipe.cooktime! * 60 : null,
       'servings': recipe.servings,
-      });
+    });
   }
 
   static Future<void> deleteUserRecipe(Recipe recipe) async {
-    final userId = _auth.currentUser?.uid;
-    if (userId == null) return;
-    
-    final snapshot = await _firestore
-        .collection('SavedRecipes')
-        .where('userId', isEqualTo: userId)
-        .where('title', isEqualTo: recipe.title)
-        .get();
-
-    for (final doc in snapshot.docs) {
-      await doc.reference.delete();
+    final recipeId = recipe.id;
+    if (recipeId == null) {
+      throw StateError('Cannot delete a saved recipe without its document ID.');
     }
+
+    await _firestore.collection('SavedRecipes').doc(recipeId).delete();
   }
 }

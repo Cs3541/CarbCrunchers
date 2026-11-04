@@ -272,24 +272,6 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
     if (_selectedRecipes.isEmpty) return;
 
     final selectedRecipes = _selectedRecipes.toList();
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Delete selected recipe(s)?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Delete'),
-            ),
-          ],
-        );
-      },
-    );
 
     for (final recipe in selectedRecipes) {
         final originalIndex = _myRecipes.indexOf(recipe);

@@ -5,6 +5,7 @@ import '../../presenters/recipe_presenter.dart';
 import '../../models/step_model.dart';
 import '../../models/ingredient_model.dart';
 import '../../models/nutrition_model.dart';
+import '../views/recipe_page.dart';
 
 class MyRecipeScreen extends StatefulWidget {
   const MyRecipeScreen({super.key});
@@ -644,6 +645,14 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                         },
                         child: const Icon(Icons.edit, color: Colors.white),
                       ),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => RecipePage(recipe: recipe),
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(height: 10.0),
                   ],

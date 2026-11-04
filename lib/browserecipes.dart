@@ -17,7 +17,7 @@ class BrowseRecipiesScreen extends StatefulWidget {
 class _BrowseRecipiesState extends State<BrowseRecipiesScreen> {
   BrowseRecipiesState _state = BrowseRecipiesState.loading;
 
-  Map<RecipeCategory, List<Recipe>> _recipes = {};
+  final Map<RecipeCategory, List<Recipe>> _recipes = {};
   final Map<RecipeCategory, DocumentSnapshot?> _lastDoc = {};
   final Set<RecipeCategory> _loading = {};
   final Set<RecipeCategory> _done = {};

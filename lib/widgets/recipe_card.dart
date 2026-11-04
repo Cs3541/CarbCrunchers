@@ -41,7 +41,7 @@ class RecipeCard extends StatelessWidget {
                     : Image.network(
                         recipe.imageURL!,
                         fit: BoxFit.cover, // fill the box, crop the edges
-                        errorBuilder: (_, __, ___) => _placeholder(),
+                        errorBuilder: (_, _, _) => _placeholder(),
                       ),
               ),
               Padding(

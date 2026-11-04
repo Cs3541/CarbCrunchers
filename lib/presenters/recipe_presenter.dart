@@ -23,7 +23,7 @@ class RecipePresenter {
   }
 
   Future<void> addUserRecipe(Recipe recipe) async {
-    final id = await Recipe.addUserRecipe(recipe);
+      await Recipe.addUserRecipe(recipe);
       throw StateError('Cannot add a recipe without a logged-in user.');
     }
 

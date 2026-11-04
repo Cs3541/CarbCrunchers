@@ -561,7 +561,11 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                 final recipe = _myRecipes[index];
                 return Column(
                   children: [
-                    ListTile(
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                    child: ListTile(
+                      minVerticalPadding: 30.0,
+                      minTileHeight: 30.0,
                       tileColor: const Color.fromARGB(255, 247, 231, 206),
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16.0,
@@ -574,28 +578,47 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                           width: 2.0,
                         ),
                       ),
-                      leading: Checkbox(
-                        value: _selectedRecipes.contains(recipe),
-                        activeColor: const Color(0xFFB45309),
-                        onChanged: (selected) {
-                          setState(() {
-                            if (selected == true) {
-                              _selectedRecipes.add(recipe);
-                            } else {
-                              _selectedRecipes.remove(recipe);
-                            }
-                          });
-                        },
+                      leading: SizedBox (
+                        width: 200,
+                        child: Row(
+                          children: [
+                            Checkbox(
+                              value: _selectedRecipes.contains(recipe),
+                              activeColor: const Color(0xFFB45309),
+                              onChanged: (selected) {
+                                setState(() {
+                                  if (selected == true) {
+                                    _selectedRecipes.add(recipe);
+                                  } else {
+                                    _selectedRecipes.remove(recipe);
+                                  }
+                                });
+                              },
+                            ),
+                            ClipRRect(
+                              child: recipe.imageURL != null
+                                  ? Image.network(
+                                      recipe.imageURL!,
+                                      width: 60,
+                                      height: 60,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, _, _) => _imagePlaceholder(),
+                                    )
+                                  : _imagePlaceholder(),
+                            ),
+                            SizedBox(width: 12.0),
+                          ],
+                        ),
                       ),
                       title: Text(recipe.title),
                       titleTextStyle: const TextStyle(
-                        fontSize: 20.0,
+                        fontSize: 16.0,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFFB45309),
                       ),
                       subtitle: Text(recipe.description ?? ''),
                       subtitleTextStyle: const TextStyle(
-                        fontSize: 16.0,
+                        fontSize: 14.0,
                         color: Color(0xFFB45309),
                       ),
                       trailing: FloatingActionButton(
@@ -617,6 +640,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                         );
                       },
                     ),
+                  ),
                     const SizedBox(height: 10.0),
                   ],
                 );
@@ -644,4 +668,11 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
   }
 }
 
-//////TESTING CODE BELOW
+Widget _imagePlaceholder() {
+    return Container(
+      width: 60,
+      height: 100,
+      color: Colors.grey[300],
+      child: const Icon(Icons.restaurant, color: Colors.grey),
+    );
+  }

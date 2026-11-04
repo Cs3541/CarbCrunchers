@@ -3,6 +3,7 @@ class RecipeCategory {
   final List<String> keywords;
 
   const RecipeCategory({required this.name, required this.keywords});
+
 }
 
 const List<RecipeCategory> recipeCategories = [
@@ -216,3 +217,5 @@ const List<RecipeCategory> recipeCategories = [
     ],
   ),
 ];
+
+

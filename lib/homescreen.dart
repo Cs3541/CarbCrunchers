@@ -5,6 +5,7 @@ import 'goals_screen.dart';
 import 'Presenters/AuthPresenter.dart';
 import 'browserecipes.dart';
 import 'login.dart';
+import 'my_recipe_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -134,7 +135,14 @@ class HomeScreen extends StatelessWidget {
                   const SizedBox(width: 16.0),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const MyRecipeScreen(),
+                          ),
+                        );
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF1F5DA8),
                         foregroundColor: Colors.white,

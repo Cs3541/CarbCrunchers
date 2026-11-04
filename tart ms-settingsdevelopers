@@ -1,0 +1,19 @@
+* [32mMyRecipe_Ryley                  [m 2a0c1f2 Merge pull request #11 from Cs3541/background
+  main                            [m 2a0c1f2 Merge pull request #11 from Cs3541/background
+  [31mremotes/origin/HEAD             [m -> origin/main
+  [31mremotes/origin/MainHome         [m 19b9e5f Merge branch 'main' into MainHome
+  [31mremotes/origin/MealPlan         [m 388364f Meal Plan Page
+  [31mremotes/origin/MyRecipies       [m 6c1d17f Merge branch 'main' of https://github.com/Cs3541/CarbCrunchers into MyRecipies
+  [31mremotes/origin/MyRecipies_Cam   [m ca4b52a Merge branch 'main' into MyRecipies_Cam
+  [31mremotes/origin/Nutrition        [m 7c26017 Merge branch 'main' into Nutrition
+  [31mremotes/origin/background       [m db885ee changed background of all screens to cream
+  [31mremotes/origin/fixmain          [m 4d74c7c fixxed homescreen
+  [31mremotes/origin/homepagefix      [m 615170c Merge branch 'main' into homepagefix
+  [31mremotes/origin/homescreen       [m f60b569 added homescreen
+  [31mremotes/origin/homescreenbuttons[m 5f318bc added buttons to homepage
+  [31mremotes/origin/main             [m 2a0c1f2 Merge pull request #11 from Cs3541/background
+  [31mremotes/origin/recipes_sprint_1 [m 6787cf9 start to add recipe models, card
+  [31mremotes/origin/required         [m 34cb04f added the requirement for the sign in page
+  [31mremotes/origin/reset            [m a6a3df4 reset password fuctionality added
+  [31mremotes/origin/signin           [m 4a06acb added a login page and the MVP folders
+  [31mremotes/origin/test             [m 6132f5b Updated imports to work with /Models instead of /models

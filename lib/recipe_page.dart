@@ -39,7 +39,7 @@ class _RecipePageState extends State<RecipePage> {
                       recipe.imageURL!,
                       fit: BoxFit.cover,
                       cacheWidth: 1000,
-                      errorBuilder: (_, __, ___) => _imagePlaceholder(),
+                      errorBuilder: (_, _, ___) => _imagePlaceholder(),
                     ),
             ),
           ),

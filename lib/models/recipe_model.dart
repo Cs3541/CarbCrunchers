@@ -8,6 +8,7 @@ import '../models/nutrition_model.dart';
 import '../models/category_model.dart';
 
 class Recipe {
+  final String? id;
   final String title;
   final String? description;
   final List<IngredientModel> ingredients;
@@ -19,6 +20,7 @@ class Recipe {
   final int? servings;
 
   Recipe({
+    this.id,
     required this.title,
     required this.description,
     this.nutrition,
@@ -73,6 +75,7 @@ class Recipe {
         (map['cook_time_sec'] as num?) ?? (map['total_time_sec'] as num?);
 
     return Recipe(
+      id: id,
       title: (map['title']) as String? ?? '',
       description: (map['Description']) as String? ?? '',
       ingredients: (map['ingredients'] as List? ?? [])
@@ -103,6 +106,7 @@ class Recipe {
     return snapshot.docs.map((doc) {
       final data = doc.data();
       return Recipe(
+        id: doc.id,
         title: data['title'] as String? ?? '',
         description: data['Description'] as String? ?? '',
         ingredients: (data['ingredients'] as List? ?? [])
@@ -143,4 +147,18 @@ class Recipe {
       });
   }
 
+  static Future<void> deleteUserRecipe(Recipe recipe) async {
+    final userId = _auth.currentUser?.uid;
+    if (userId == null) return;
+    
+    final snapshot = await _firestore
+        .collection('SavedRecipes')
+        .where('userId', isEqualTo: userId)
+        .where('title', isEqualTo: recipe.title)
+        .get();
+
+    for (final doc in snapshot.docs) {
+      await doc.reference.delete();
+    }
+  }
 }

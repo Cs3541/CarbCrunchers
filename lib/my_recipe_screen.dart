@@ -17,9 +17,20 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
   final RecipePresenter _recipePresenter = RecipePresenter();
   List<Recipe> _myRecipes = [];
   bool _isLoading = true;
+
+  //Controllers to allow for variable number of ingredients/steps/nutrition information to be added to the recipe
   final ingredientControllers = <TextEditingController>[];
   final stepControllers = <TextEditingController>[];
-
+  final nutritionControllers = <TextEditingController>[]; //Has a set number of fields and labels but can always add more
+  final List<String> nutritionLabels = [
+    'Calories',
+    'Carbs',
+    'Fat',
+    'Fiber',
+    'Protein',
+    'Sodium (mg)',
+    'Sugar'
+  ];
 
   @override
   void initState() {
@@ -27,6 +38,8 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
     _fetchMyRecipes();
   }
 
+
+  //Loads User Data
   Future<void> _fetchMyRecipes() async {
     await _recipePresenter.loadRecipes();
     setState(() {
@@ -35,6 +48,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
     });
   }
 
+  //Dialog to edit a recipe
   void _showEditRecipeDialog(Recipe recipe) {
     String recipeTitle = recipe.title;
     String? description = recipe.description;
@@ -50,18 +64,180 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Edit Recipe'),
+          title: const Text('Add New Recipe'),
           content: SingleChildScrollView(
             child: Column(
               children: [
+
+                //Recipe Title
                 TextField(
-                  decoration: const InputDecoration(labelText: 'New Recipe Title'),
-                  controller: TextEditingController(text: recipeTitle),
+                  decoration: const InputDecoration(labelText: 'Recipe Title'),
                   onChanged: (value) {
                     recipeTitle = value;
                   },
                 ),
-                // Add more fields for ingredients, steps, imageURL, keywords, nutrition, cooktime, servings
+
+                //Recipe Description
+                TextField(
+                  decoration: const InputDecoration(
+                    labelText: 'Description',
+                    hintText: 'If desired, enter a description for your recipe',
+                  ),
+                  keyboardType: TextInputType.multiline,
+                  onChanged: (value) {
+                    description = value;
+                  },
+                ),
+
+                //Ingredients
+                Column(
+                  children: [
+                    for (var i = 0; i < ingredientControllers.length; i++)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: SizedBox(
+                              height: 40,
+                              child: TextField(
+                                controller: ingredientControllers[i],
+                                decoration: InputDecoration(labelText: 'Ingredient ${i + 1}'),
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.remove_circle_outline),
+                            onPressed: () {
+                              setState(() {
+                                ingredientControllers.removeAt(i).dispose();
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    TextButton.icon(
+                      onPressed: () {
+                        setState(() {
+                          ingredientControllers.add(TextEditingController());
+                        });
+                      },
+                      icon: const Icon(Icons.add),
+                      label: const Text('Add ingredient'),
+                    ),
+                  ],
+                ),
+
+                //Recipe Steps
+                Column(
+                  children: [
+                    for (var i = 0; i < stepControllers.length; i++)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: SizedBox(
+                              height: 40,
+                              child: TextField(
+                                controller: stepControllers[i],
+                                decoration: InputDecoration(labelText: 'Recipe Step ${i + 1}'),
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.remove_circle_outline),
+                            onPressed: () {
+                              setState(() {
+                                stepControllers.removeAt(i).dispose();
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    TextButton.icon(
+                      onPressed: () {
+                        setState(() {
+                          stepControllers.add(TextEditingController());
+                        });
+                      },
+                      icon: const Icon(Icons.add),
+                      label: const Text('Add Recipe Step'),
+                    ),
+                  ],
+                ),
+
+                //Nutrition Information
+                Column(
+                  children: [
+                    for (var i = 1; i < nutritionLabels.length && i < 1; i++)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: SizedBox(
+                              height: 40,
+                              child: TextField(
+                                controller: nutritionControllers[i],
+                                decoration: InputDecoration(labelText: nutritionLabels[i]),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    TextButton.icon(
+                      onPressed: () {
+                        setState(() {
+                          nutritionControllers.add(TextEditingController());
+                        });
+                      },
+                      icon: const Icon(Icons.add),
+                      label: const Text('Add Nutrition Information'),
+                    ),
+                  ],
+                ),
+
+                //Recipe Servings
+                TextField(
+                  decoration: const InputDecoration(
+                    labelText: 'Servings',
+                    hintText: 'If desired, enter the number of servings',
+                  ),
+                  keyboardType: TextInputType.number,
+                  onChanged: (value) {
+                    servings = int.tryParse(value);
+                  },
+                ),
+
+                //Recipe Cook Time
+                TextField(
+                  decoration: const InputDecoration(
+                    labelText: 'Cook Time (minutes)',
+                    hintText: 'If desired, enter the cook time in minutes',
+                  ),
+                  keyboardType: TextInputType.number,
+                  onChanged: (value) {
+                    cooktime = int.tryParse(value);
+                  },
+                ),
+
+                //Recipe Keywords
+                TextField(
+                  decoration: const InputDecoration(
+                    labelText: 'Keywords',
+                    hintText: 'If desired, enter keywords separated by commas',
+                  ),
+                  onChanged: (value) {
+                    keywords = value.split(',').map((e) => e.trim()).toList();
+                  },
+                ),
+
+                //ImageURL
+                TextField(
+                  decoration: const InputDecoration(
+                    labelText: 'Image URL',
+                    hintText: 'If desired, enter an image URL for your recipe',
+                  ),
+                  onChanged: (value) {
+                    imageURL = value;
+                  },
+                ),
+
               ],
             ),
           ),
@@ -88,7 +264,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                   );
                   Navigator.of(context).pop();
                   setState(() {
-                    final index = _myRecipes.indexOf(recipe);
+                    final index = _myRecipes.indexWhere((r) => r.title == recipe.title);
                     if (index != -1) {
                       _myRecipes[index] = updatedRecipe;
                     }
@@ -101,7 +277,36 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
         );
       },
     );
+  }
 
+  void _showDeleteRecipeDialog(Recipe recipe) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Recipe'),
+          content: const Text('Are you sure you want to delete this recipe?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await _recipePresenter.deleteUserRecipe(recipe);
+                setState(() {
+                  _myRecipes.removeWhere((r) => r.title == recipe.title);
+                });
+              },
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _showAddRecipeDialog() {
@@ -219,12 +424,32 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                 ),
 
                 //Nutrition Information
-                FloatingActionButton(
-                  tooltip: 'If desired, add nutritional information for the recipe',
-                  onPressed: () {
-                    // Implement the logic to add nutritional information
-                  },
-                  child: const Icon(Icons.add),
+                Column(
+                  children: [
+                    for (var i = 1; i < nutritionLabels.length && i < 1; i++)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: SizedBox(
+                              height: 40,
+                              child: TextField(
+                                controller: nutritionControllers[i],
+                                decoration: InputDecoration(labelText: nutritionLabels[i]),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    TextButton.icon(
+                      onPressed: () {
+                        setState(() {
+                          nutritionControllers.add(TextEditingController());
+                        });
+                      },
+                      icon: const Icon(Icons.add),
+                      label: const Text('Add Nutrition Information'),
+                    ),
+                  ],
                 ),
 
                 //Recipe Servings
@@ -370,10 +595,20 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                 );
               },
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddRecipeDialog,
-        child: const Icon(Icons.add),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton(
+            onPressed: _showAddRecipeDialog,
+            child: const Icon(Icons.add),
+          ),
+          const SizedBox(height: 12.0),
+          FloatingActionButton(
+            onPressed: () =>_showDeleteRecipeDialog,
+            child: const Icon(Icons.delete),
+          ),
+        ],
       ),
-    );
+   );
   }
 }

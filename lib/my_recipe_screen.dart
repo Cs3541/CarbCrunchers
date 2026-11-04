@@ -91,6 +91,52 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                   },
                 ),
 
+                //Recipe Servings
+                TextField(
+                  decoration: const InputDecoration(
+                    labelText: 'Servings',
+                    hintText: 'If desired, enter the number of servings',
+                  ),
+                  keyboardType: TextInputType.number,
+                  onChanged: (value) {
+                    servings = int.tryParse(value);
+                  },
+                ),
+
+                //Recipe Cook Time
+                TextField(
+                  decoration: const InputDecoration(
+                    labelText: 'Cook Time (minutes)',
+                    hintText: 'If desired, enter the cook time in minutes',
+                  ),
+                  keyboardType: TextInputType.number,
+                  onChanged: (value) {
+                    cooktime = int.tryParse(value);
+                  },
+                ),
+
+                //Recipe Keywords
+                TextField(
+                  decoration: const InputDecoration(
+                    labelText: 'Keywords',
+                    hintText: 'If desired, enter keywords separated by commas',
+                  ),
+                  onChanged: (value) {
+                    keywords = value.split(',').map((e) => e.trim()).toList();
+                  },
+                ),
+
+                //ImageURL
+                TextField(
+                  decoration: const InputDecoration(
+                    labelText: 'Image URL',
+                    hintText: 'If desired, enter an image URL for your recipe',
+                  ),
+                  onChanged: (value) {
+                    imageURL = value;
+                  },
+                ),
+
                 //Ingredients
                 Column(
                   children: [
@@ -199,52 +245,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                     ),
                   ],
                 ),
-
-                //Recipe Servings
-                TextField(
-                  decoration: const InputDecoration(
-                    labelText: 'Servings',
-                    hintText: 'If desired, enter the number of servings',
-                  ),
-                  keyboardType: TextInputType.number,
-                  onChanged: (value) {
-                    servings = int.tryParse(value);
-                  },
-                ),
-
-                //Recipe Cook Time
-                TextField(
-                  decoration: const InputDecoration(
-                    labelText: 'Cook Time (minutes)',
-                    hintText: 'If desired, enter the cook time in minutes',
-                  ),
-                  keyboardType: TextInputType.number,
-                  onChanged: (value) {
-                    cooktime = int.tryParse(value);
-                  },
-                ),
-
-                //Recipe Keywords
-                TextField(
-                  decoration: const InputDecoration(
-                    labelText: 'Keywords',
-                    hintText: 'If desired, enter keywords separated by commas',
-                  ),
-                  onChanged: (value) {
-                    keywords = value.split(',').map((e) => e.trim()).toList();
-                  },
-                ),
-
-                //ImageURL
-                TextField(
-                  decoration: const InputDecoration(
-                    labelText: 'Image URL',
-                    hintText: 'If desired, enter an image URL for your recipe',
-                  ),
-                  onChanged: (value) {
-                    imageURL = value;
-                  },
-                ),
+                
               ],
             ),
           ),

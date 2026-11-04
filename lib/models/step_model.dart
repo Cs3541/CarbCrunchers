@@ -19,4 +19,13 @@ class StepModel {
       ingredientIds: (map['ingredient_ids'] as List? ?? []).cast<String>(),
     );
   }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'text': text,
+      'is_passive': is_passive,
+      'timer_sec': timerSec,
+      'ingredient_ids': ingredientIds,
+    };
+  }
 }

@@ -22,4 +22,15 @@ class IngredientModel {
       name: map['name'] as String?,
     );
   }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'raw': raw,
+      'quantity': quantity,
+      'unit': unit,
+      'name': name,
+    };
+  }
+
 }

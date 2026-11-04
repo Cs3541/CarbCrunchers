@@ -24,7 +24,7 @@ class RecipePresenter {
 
   Future<void> addUserRecipe(Recipe recipe) async {
     await Recipe.addUserRecipe(recipe);
-    throw StateError('Cannot add a recipe without a logged-in user.');
+    _recipes.add(recipe);
   }
 
   Future<void> deleteUserRecipe(Recipe recipe) async {

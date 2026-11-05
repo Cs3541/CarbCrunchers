@@ -7,7 +7,7 @@ class RecipePresenter {
   final List<Recipe> _recipes = [];
 
   Future<void> fetchRecipesByCategory(RecipeCategory category) async {
-    List<Recipe> _recipes = [];
+    List<Recipe> recipes0 = [];
     try {
       final result = await Recipe.fetchRecipesByCategory(
         category,
@@ -16,7 +16,7 @@ class RecipePresenter {
       );
       final recipes = result['recipes'] as List<Recipe>;
       final lastDoc = result['lastDoc'];
-      _recipes.addAll(recipes);
+      recipes0.addAll(recipes);
     } catch (e) {
       print('Error fetching recipes: $e');
     }

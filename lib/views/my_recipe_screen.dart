@@ -309,6 +309,10 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
     int? cooktime;
     int? servings;
 
+    nutritionControllers.clear;
+    ingredientControllers.clear;
+    
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -498,6 +502,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                   setState(() {
                     _myRecipes.add(newRecipe);
                   });
+                  await _recipePresenter.addUserRecipe(newRecipe);
                 }
               },
               child: const Text('Save'),
@@ -508,15 +513,16 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
     );
   }
 
+  void _showFilterRecipeDialog() {}
+
+  //Main Screen, displays recipes and can click on recipes
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 247, 231, 206),
-      appBar: AppBar(
+      appBar:   AppBar(
         title: Text(
-          _selectedRecipes.isEmpty
-              ? 'My Recipes'
-              : '${_selectedRecipes.length} selected',
+          'My Recipes',
           style: const TextStyle(
             fontSize: 28.0,
             fontWeight: FontWeight.bold,
@@ -524,16 +530,6 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
             color: Color(0xFFB45309),
           ),
         ),
-        actions: [
-          if (_selectedRecipes.isNotEmpty)
-            IconButton(
-              tooltip: 'Clear selection',
-              onPressed: () {
-                setState(_selectedRecipes.clear);
-              },
-              icon: const Icon(Icons.close),
-            ),
-        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -557,7 +553,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                         borderRadius: BorderRadius.circular(10.0),
                         side: const BorderSide(
                           color: Color(0xFFB45309),
-                          width: 2.0,
+                          width: 4.0,
                         ),
                       ),
                       leading: SizedBox (
@@ -628,23 +624,103 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                 );
               },
             ),
-      floatingActionButton: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          FloatingActionButton.extended(
-            onPressed: _showAddRecipeDialog,
-            heroTag: 'addRecipe',
-            label: const Text('Add Recipe'),
-            icon: const Icon(Icons.add),
+        endDrawer: Drawer(
+        backgroundColor: const Color.fromARGB(255, 216, 190, 129),
+        child: ListView(
+          scrollDirection: Axis.vertical,
+          children: [
+            DrawerHeader(child: Text('Recipe Options',
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+            fontSize: 28.0,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Homemade Apple',
+            color: Color(0xFFB45309),
           ),
-            const SizedBox(height: 12.0),
-            FloatingActionButton.extended(
-              onPressed: _deleteSelectedRecipes,
-              heroTag: 'deleteSelectedRecipes',
-              icon: const Icon(Icons.delete),
-              label: Text('Delete Recipe'),
+          )),
+
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+              child: ListTile(      
+                title: Text(
+                  'Filter Recipes',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 15.0,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Homemade Apple',
+                    color: Color(0xFFB45309),
+                  ),
+                ),
+                trailing: Icon(Icons.search),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                  side: const BorderSide(
+                    color: Color(0xFFB45309),
+                    width: 4.0,
+                  ),
+                ),
+                tileColor: const Color.fromARGB(255, 247, 231, 206),
+                hoverColor: const Color.fromARGB(255, 212, 133, 6),
+                onTap: _showFilterRecipeDialog,
+              ),
+            ),
+            
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+              child: ListTile(      
+                title: Text(
+                  'Add Recipe',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 15.0,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Homemade Apple',
+                    color: Color(0xFFB45309),
+                  ),
+                ),
+                trailing: Icon(Icons.add),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                  side: const BorderSide(
+                    color: Color(0xFFB45309),
+                    width: 4.0,
+                  ),
+                ),
+                tileColor: const Color.fromARGB(255, 247, 231, 206),
+                hoverColor: const Color.fromARGB(255, 212, 133, 6),
+                onTap: _showAddRecipeDialog,
+              ),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+              child: ListTile(      
+                title:Text(
+                  'Delete Recipe',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 15.0,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Homemade Apple',
+                    color: Color(0xFFB45309),
+                  ),
+                ),
+                trailing: Icon(Icons.delete),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                  side: const BorderSide(
+                    color: Color(0xFFB45309),
+                    width: 4.0,
+                  ),
+                ),
+                tileColor: const Color.fromARGB(255, 247, 231, 206),
+                hoverColor: const Color.fromARGB(255, 212, 133, 6),
+                onTap: _deleteSelectedRecipes,
+              ),
             ),
           ],
+        ),
       ),
     );
   }

@@ -99,7 +99,7 @@ class Recipe {
     if (userId == null) return [];
 
     final snapshot = await _firestore
-        .collection('SavedRecipes')
+        .collection('saved_recipes')
         .where('userId', isEqualTo: userId)
         .get();
 
@@ -119,8 +119,8 @@ class Recipe {
         nutrition: data['nutrition'] != null
             ? Nutrition.fromMap(Map<String, dynamic>.from(data['nutrition']))
             : null,
-        keywords: (data['keywords'] as List<String>?)
-            ?.map((keyword) => keyword)
+        keywords: (data['keywords'] as List<dynamic>?)
+            ?.map((keyword) => keyword.toString())
             .toList(),
         cooktime: (data['cook_time_sec'] as num?)?.toInt(),
         servings: (data['servings'] as num?)?.toInt(),
@@ -132,15 +132,13 @@ class Recipe {
     final userId = _auth.currentUser?.uid;
     if (userId == null) return;
 
-    await _firestore.collection('SavedRecipes').add({
+    await _firestore.collection('saved_recipes').add({
       'userId': userId,
       'title': recipe.title,
       'Description': recipe.description?.trim(),
-      'ingredients': recipe.ingredients
-          .map((ingredient) => ingredient.toMap())
-          .toList(),
+      'ingredients': recipe.ingredients.map((ingredient) => ingredient.toMap()).toList(),
       'image_url': recipe.imageURL,
-      'steps': recipe.steps,
+      'steps': recipe.steps?.map((step) => step.toMap()).toList(),
       'keywords': recipe.keywords,
       'nutrition': recipe.nutrition?.toMap(),
       'cook_time_sec': recipe.cooktime != null ? recipe.cooktime! * 60 : null,
@@ -150,6 +148,6 @@ class Recipe {
 
   static Future<void> deleteUserRecipe(Recipe recipe) async {
     final recipeId = recipe.title;
-    await _firestore.collection('SavedRecipes').doc(recipeId).delete();
+    await _firestore.collection('saved_recipes').doc(recipeId).delete();
   }
 }

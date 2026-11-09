@@ -9,6 +9,7 @@ import '../models/category_model.dart';
 
 class Recipe {
   final String? id;
+  final String? owner_id?;
   final String title;
   final String? description;
   final List<IngredientModel> ingredients;
@@ -21,6 +22,7 @@ class Recipe {
 
   Recipe({
     this.id,
+    this.owner_id,
     required this.title,
     required this.description,
     this.nutrition,
@@ -107,6 +109,7 @@ class Recipe {
       final data = doc.data();
       return Recipe(
         id: doc.id,
+        owner_id: data['owner_id'] as String? ?? '',
         title: data['title'] as String? ?? '',
         description: data['Description'] as String? ?? '',
         ingredients: (data['ingredients'] as List? ?? [])
@@ -133,7 +136,8 @@ class Recipe {
     if (userId == null) return;
 
     await _firestore.collection('saved_recipes').add({
-      'userId': userId,
+      'owner_ID': _auth.currentUser?.email,
+      'id': userId,
       'title': recipe.title,
       'Description': recipe.description?.trim(),
       'ingredients': recipe.ingredients.map((ingredient) => ingredient.toMap()).toList(),
@@ -147,7 +151,7 @@ class Recipe {
   }
 
   static Future<void> deleteUserRecipe(Recipe recipe) async {
-    final recipeId = recipe.title;
+    final recipeId = recipe.id;
     await _firestore.collection('saved_recipes').doc(recipeId).delete();
   }
 }

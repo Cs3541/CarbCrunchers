@@ -268,6 +268,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
     );
   }
 
+  //Dialog to delete a recipe
   Future<void> _deleteSelectedRecipes() async {
     if (_selectedRecipes.isEmpty) return;
 
@@ -298,6 +299,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
     }
   }
 
+  //Dialog to add a recipe
   void _showAddRecipeDialog() {
     String recipeTitle = '';
     String? description = '';
@@ -513,6 +515,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
     );
   }
 
+  //Dialog to filter recipes
   void _showFilterRecipeDialog() {}
 
   //Main Screen, displays recipes and can click on recipes

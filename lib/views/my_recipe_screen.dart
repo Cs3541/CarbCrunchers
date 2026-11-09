@@ -516,7 +516,17 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
   }
 
   //Dialog to filter recipes
-  void _showFilterRecipeDialog() {}
+  void _showFilterRecipeDialog() {
+
+
+  }
+
+  String? selectedTitle;
+  String? selectedKeyword;
+  String? selectedCalories;
+  String? searchTitle;
+  final GlobalKey _tileKey = GlobalKey();
+  ScrollController _scrollController = ScrollController();
 
   //Main Screen, displays recipes and can click on recipes
   @override
@@ -650,7 +660,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
 
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-              child: ListTile(      
+              child: ExpansionTile(      
                 title: Text(
                   'Filter Recipes',
                   textAlign: TextAlign.center,
@@ -669,9 +679,19 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                     width: 4.0,
                   ),
                 ),
-                tileColor: const Color.fromARGB(255, 247, 231, 206),
-                hoverColor: const Color.fromARGB(255, 212, 133, 6),
-                onTap: _showFilterRecipeDialog,
+                splashColor: const Color.fromARGB(255, 247, 231, 206),
+                children: [
+                  DropdownMenu<String>(
+                    initialSelection: 'none',
+                    label: Text('Recipe Title Filter'),
+                    hintText: 'Select a Filter',
+                    dropdownMenuEntries: const [
+                      DropdownMenuEntry<String>(value: 'none', label: 'None'),
+                      DropdownMenuEntry<String>(value: 'ascending', label: 'Ascending'),
+                      DropdownMenuEntry<String>(value: 'descending', label: 'Descending'),
+                    ],
+                  ),
+                ],
               ),
             ),
             

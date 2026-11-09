@@ -557,7 +557,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                         ),
                       ),
                       leading: SizedBox (
-                        width: 200,
+                        width: 120,
                         child: Row(
                           children: [
                             Checkbox(
@@ -584,7 +584,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                                     )
                                   : _imagePlaceholder(),
                             ),
-                            SizedBox(width: 12.0),
+                            //SizedBox(width: 12.0),
                           ],
                         ),
                       ),
@@ -627,17 +627,23 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
         endDrawer: Drawer(
         backgroundColor: const Color.fromARGB(255, 216, 190, 129),
         child: ListView(
+          
           scrollDirection: Axis.vertical,
           children: [
-            DrawerHeader(child: Text('Recipe Options',
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-            fontSize: 28.0,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Homemade Apple',
-            color: Color(0xFFB45309),
-          ),
-          )),
+            DrawerHeader(
+              child: Center(
+                child: Text(
+                  'Recipe Options',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 28.0,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Homemade Apple',
+                    color: Color(0xFFB45309),
+                  ),
+                ),
+              ),
+            ),
 
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
@@ -728,9 +734,9 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
 
 Widget _imagePlaceholder() {
     return Container(
+      color: const Color(0xFFB45309),
       width: 60,
       height: 100,
-      color: Colors.grey[300],
-      child: const Icon(Icons.restaurant, color: Colors.grey),
+      child: const Icon(Icons.restaurant, color: Color.fromARGB(255, 247, 231, 206)),
     );
   }

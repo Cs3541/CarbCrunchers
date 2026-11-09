@@ -9,7 +9,7 @@ import '../models/category_model.dart';
 
 class Recipe {
   final String? id;
-  final String? owner_id?;
+  final String? owner_id;
   final String title;
   final String? description;
   final List<IngredientModel> ingredients;

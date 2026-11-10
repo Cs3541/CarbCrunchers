@@ -73,6 +73,7 @@ class _LoginScreenState extends State<LoginScreen> {
       submitLabel: 'Login',
       onSubmit: handleLogin,
       onPasswordReset: handlePasswordReset,
+      emailLabel: 'Email or username',
       switchPrompt: "Don't have an account?",
       switchLabel: 'Sign up',
       onSwitch: () {

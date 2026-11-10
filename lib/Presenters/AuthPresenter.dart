@@ -7,8 +7,8 @@ class AuthPresenter {
 
   AuthModel get _model => _authModel ??= AuthModel();
 
-  Future<String?> signIn(String email, String password) async {
-    return _model.signIn(email, password);
+  Future<String?> signIn(String emailOrUsername, String password) async {
+    return _model.signIn(emailOrUsername, password);
   }
 
   Future<String?> signUp(String email, String password) async {
@@ -21,9 +21,28 @@ class AuthPresenter {
 
   Future<void> signOut() => _model.signOut();
 
-  Stream<User?> authStateChanges() => _model.authStateChanges();
+  Future<void> updateUsernameAndEmail({
+    required String username,
+    String? newEmail,
+    String? currentPassword,
+  }) => _model.updateUsernameAndEmail(
+    username: username,
+    newEmail: newEmail,
+    currentPassword: currentPassword,
+  );
 
-  Stream<User?> get user => _model.authStateChanges();
+  Future<void> reauthenticate(String password) =>
+      _model.reauthenticate(password);
+
+  Future<void> updatePassword(String password) =>
+      _model.updatePassword(password);
+
+  Future<void> deleteAccount() => _model.deleteAccount();
+
+  Stream<User?> authStateChanges() => _model.authStateChanges();
+  Stream<User?> userChanges() => _model.userChanges();
+
+  Stream<User?> get user => _model.userChanges();
   User? get currentUser => _model.currentUser;
 
   Future<String?> login(String email, String password) {

@@ -44,7 +44,13 @@ class _GoalsScreenState extends State<GoalsScreen> {
     final values = <String, double>{};
 
     for (final field in fields.entries) {
-      final number = double.tryParse(field.value.text.trim());
+      final text = field.value.text.trim();
+      if (text.isEmpty &&
+          (field.key == 'Height (cm)' || field.key == 'Weight (kg)')) {
+        continue;
+      }
+
+      final number = double.tryParse(text);
       final isGraceValue = field.key.endsWith('grace (g)');
 
       if (number == null ||
@@ -95,33 +101,80 @@ class _GoalsScreenState extends State<GoalsScreen> {
   }
 
   Widget _buildFieldRow(String firstField, [String? secondField]) {
-    Widget buildField(String label) {
-      return Expanded(
-        child: TextField(
-          controller: fields[label],
-          keyboardType: const TextInputType.numberWithOptions(
-            decimal: true,
-          ),
-          decoration: InputDecoration(
-            labelText: label,
-            border: const OutlineInputBorder(),
-            filled: true,
-            fillColor: Colors.white,
-          ),
-        ),
-      );
-    }
+    Widget buildField(String label) => TextField(
+      controller: fields[label],
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+        filled: true,
+        fillColor: Colors.white,
+      ),
+    );
 
-  Widget _buildFieldRow(String firstField, [String? secondField]) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         children: [
-          buildField(firstField),
+          Expanded(child: buildField(firstField)),
           if (secondField != null) ...[
             const SizedBox(width: 12),
-            buildField(secondField),
+            Expanded(child: buildField(secondField)),
           ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMacroGoalBar({
+    required String label,
+    required String targetKey,
+    required String graceKey,
+    required Color color,
+  }) {
+    final target = saved[targetKey]!;
+    final grace = saved[graceKey]!;
+    final allowedTotal = target + grace;
+    final targetFraction = target / allowedTotal;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+              Text(
+                'Goal ${target.toStringAsFixed(0)} g'
+                '  ·  Grace +${grace.toStringAsFixed(0)} g',
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: SizedBox(
+              height: 16,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  ColoredBox(color: color.withOpacity(0.22)),
+                  FractionallySizedBox(
+                    alignment: Alignment.centerLeft,
+                    widthFactor: targetFraction,
+                    child: ColoredBox(color: color),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Allowed up to ${allowedTotal.toStringAsFixed(0)} g',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
         ],
       ),
     );
@@ -189,7 +242,9 @@ class _GoalsScreenState extends State<GoalsScreen> {
           const SizedBox(height: 20),
 
           _buildFieldRow('Height (cm)', 'Weight (kg)'),
-          _buildFieldRow('Daily calories', 'Daily protein (g)'),
+          _buildFieldRow('Daily calories'),
+          _buildFieldRow('Daily protein (g)', 'Daily protein grace (g)'),
+          _buildFieldRow('Daily carbs (g)', 'Daily carbs grace (g)'),
           _buildFieldRow('Daily fat (g)', 'Daily fat grace (g)'),
           _buildFieldRow('Daily sugar (g)', 'Daily sugar grace (g)'),
           _buildFieldRow('Weekly calories', 'Weekly protein (g)'),

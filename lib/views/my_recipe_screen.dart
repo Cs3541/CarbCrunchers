@@ -518,7 +518,6 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
   //Dialog to filter recipes
   void _showFilterRecipeDialog() {
 
-
   }
 
   String? selectedTitle;
@@ -637,10 +636,10 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                 );
               },
             ),
-        endDrawer: Drawer(
+      endDrawer: Drawer(
         backgroundColor: const Color.fromARGB(255, 216, 190, 129),
+        width: 350,
         child: ListView(
-          
           scrollDirection: Axis.vertical,
           children: [
             DrawerHeader(
@@ -657,10 +656,40 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                 ),
               ),
             ),
-
+            SizedBox(height: 12),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-              child: ExpansionTile(      
+              child: ExpansionTile(    
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                  side: const BorderSide(
+                    color: Color(0xFFB45309),
+                    width: 4.0,
+                  ),
+                ),
+                collapsedShape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                  side: const BorderSide(
+                    color: Color(0xFFB45309),
+                    width: 4.0,
+                  ),
+                ),
+                backgroundColor: const Color.fromARGB(255, 247, 231, 206),
+                collapsedBackgroundColor: const Color.fromARGB(255, 247, 231, 206),
+                expandedCrossAxisAlignment: CrossAxisAlignment.center,
+                expandedAlignment: Alignment.center,
+                onExpansionChanged: (bool expanded) {
+                  Future.delayed(const Duration(milliseconds: 200), () {
+                      final context = _tileKey.currentContext;
+                      if (context != null) {
+                        Scrollable.ensureVisible(
+                          context,
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
+                      }
+                    });
+                  },
                 title: Text(
                   'Filter Recipes',
                   textAlign: TextAlign.center,
@@ -672,18 +701,70 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                   ),
                 ),
                 trailing: Icon(Icons.search),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10.0),
-                  side: const BorderSide(
-                    color: Color(0xFFB45309),
-                    width: 4.0,
-                  ),
-                ),
-                splashColor: const Color.fromARGB(255, 247, 231, 206),
                 children: [
+                  SearchAnchor(
+                    builder: (BuildContext context, SearchController controller) {
+                      return SearchBar(
+                        controller: controller,
+                        padding: const WidgetStatePropertyAll<EdgeInsets>(
+                          EdgeInsets.symmetric(horizontal: 16.0),
+                        ),
+                        onTap: () {
+                          controller.openView();
+                        },
+                        onChanged: (_) {
+                          controller.openView();
+                        },
+                        leading: const Icon(Icons.search),
+                      );
+                    },
+                    suggestionsBuilder:
+                      (BuildContext context, SearchController controller) {
+                        if (_myRecipes.isNotEmpty) {
+                          return List<ListTile>.generate(_myRecipes.length, (int index) {
+                            final Recipe recipe = _myRecipes[index];
+                            return ListTile(
+                              title: Text(recipe.title),
+                              onTap: () {
+                                setState(() {
+                                  controller.closeView(recipe.title);
+                                });
+                              });
+                            },
+                          );
+                        } else {
+                          return const <Widget>[
+                            ListTile(title: Text('No Recipes Available')),
+                          ];
+                      }
+                    },
+                  ),
+
                   DropdownMenu<String>(
                     initialSelection: 'none',
                     label: Text('Recipe Title Filter'),
+                    hintText: 'Select a Filter',
+                    dropdownMenuEntries: const [
+                      DropdownMenuEntry<String>(value: 'none', label: 'None'),
+                      DropdownMenuEntry<String>(value: 'ascending', label: 'Ascending'),
+                      DropdownMenuEntry<String>(value: 'descending', label: 'Descending'),
+                    ],
+                  ),
+
+                  DropdownMenu<String>(
+                    initialSelection: 'none',
+                    label: Text('Recipe Keyword Filter'),
+                    hintText: 'Select a Filter',
+                    dropdownMenuEntries: const [
+                      DropdownMenuEntry<String>(value: 'none', label: 'None'),
+                      DropdownMenuEntry<String>(value: 'ascending', label: 'Ascending'),
+                      DropdownMenuEntry<String>(value: 'descending', label: 'Descending'),
+                    ],
+                  ),
+
+                  DropdownMenu<String>(
+                    initialSelection: 'none',
+                    label: Text('Recipe Calorie Filter'),
                     hintText: 'Select a Filter',
                     dropdownMenuEntries: const [
                       DropdownMenuEntry<String>(value: 'none', label: 'None'),
@@ -695,57 +776,63 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
               ),
             ),
             
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-              child: ListTile(      
-                title: Text(
-                  'Add Recipe',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 15.0,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Homemade Apple',
-                    color: Color(0xFFB45309),
+            Material(
+              type: MaterialType.transparency,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                child: ListTile(      
+                  title: Text(
+                    'Add Recipe',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 15.0,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Homemade Apple',
+                      color: Color(0xFFB45309),
+                    ),
                   ),
-                ),
-                trailing: Icon(Icons.add),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10.0),
-                  side: const BorderSide(
-                    color: Color(0xFFB45309),
-                    width: 4.0,
+                  trailing: Icon(Icons.add),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                    side: const BorderSide(
+                      color: Color(0xFFB45309),
+                      width: 4.0,
+                    ),
                   ),
+                  tileColor: const Color.fromARGB(255, 247, 231, 206),
+                  hoverColor: const Color.fromARGB(255, 212, 133, 6),
+                  onTap: _showAddRecipeDialog,
                 ),
-                tileColor: const Color.fromARGB(255, 247, 231, 206),
-                hoverColor: const Color.fromARGB(255, 212, 133, 6),
-                onTap: _showAddRecipeDialog,
               ),
             ),
 
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-              child: ListTile(      
-                title:Text(
-                  'Delete Recipe',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 15.0,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Homemade Apple',
-                    color: Color(0xFFB45309),
+            Material(
+              type: MaterialType.transparency,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                child: ListTile(      
+                  title:Text(
+                    'Delete Recipe',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 15.0,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Homemade Apple',
+                      color: Color(0xFFB45309),
+                    ),
                   ),
-                ),
-                trailing: Icon(Icons.delete),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10.0),
-                  side: const BorderSide(
-                    color: Color(0xFFB45309),
-                    width: 4.0,
+                  trailing: Icon(Icons.delete),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                    side: const BorderSide(
+                      color: Color(0xFFB45309),
+                      width: 4.0,
+                    ),
                   ),
+                  tileColor: const Color.fromARGB(255, 247, 231, 206),
+                  hoverColor: const Color.fromARGB(255, 212, 133, 6),
+                  onTap: _deleteSelectedRecipes,
                 ),
-                tileColor: const Color.fromARGB(255, 247, 231, 206),
-                hoverColor: const Color.fromARGB(255, 212, 133, 6),
-                onTap: _deleteSelectedRecipes,
               ),
             ),
           ],

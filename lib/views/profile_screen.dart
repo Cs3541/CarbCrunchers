@@ -9,6 +9,7 @@ import 'package:image/image.dart' as img;
 
 import '../Presenters/AuthPresenter.dart';
 import '../widgets/profile_avatar.dart';
+import 'history_screen.dart';
 
 enum _ManageAccountAction { username, password }
 
@@ -564,7 +565,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: SizedBox(
                           width: double.infinity,
                           child: OutlinedButton.icon(
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => const HistoryScreen(),
+                                ),
+                              );
+                            },
                             icon: const Icon(Icons.history),
                             label: const Text('History'),
                             style: OutlinedButton.styleFrom(

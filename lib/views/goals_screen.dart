@@ -15,15 +15,23 @@ class _GoalsScreenState extends State<GoalsScreen> {
     'Weight (kg)': TextEditingController(),
     'Daily calories': TextEditingController(text: '2000'),
     'Daily protein (g)': TextEditingController(text: '100'),
+    'Daily fat (g)': TextEditingController(text: '70'),
+    'Daily sugar (g)': TextEditingController(text: '25'),
     'Weekly calories': TextEditingController(text: '14000'),
     'Weekly protein (g)': TextEditingController(text: '700'),
+    'Weekly fat (g)': TextEditingController(text: '490'),
+    'Weekly sugar (g)': TextEditingController(text: '175'),
   };
 
   Map<String, double> saved = {
     'Daily calories': 2000,
     'Daily protein (g)': 100,
+    'Daily fat (g)': 70,
+    'Daily sugar (g)': 25,
     'Weekly calories': 14000,
     'Weekly protein (g)': 700,
+    'Weekly fat (g)': 490,
+    'Weekly sugar (g)': 175,
   };
 
   void saveGoals() {
@@ -62,9 +70,43 @@ class _GoalsScreenState extends State<GoalsScreen> {
 
       fields['Daily calories']!.text = '2000';
       fields['Daily protein (g)']!.text = '$protein';
+      fields['Daily fat (g)']!.text = '70';
+      fields['Daily sugar (g)']!.text = '25';
       fields['Weekly calories']!.text = '14000';
       fields['Weekly protein (g)']!.text = '${protein * 7}';
+      fields['Weekly fat (g)']!.text = '490';
+      fields['Weekly sugar (g)']!.text = '175';
     });
+  }
+
+  Widget _buildFieldRow(String firstField, String secondField) {
+    Widget buildField(String label) {
+      return Expanded(
+        child: TextField(
+          controller: fields[label],
+          keyboardType: const TextInputType.numberWithOptions(
+            decimal: true,
+          ),
+          decoration: InputDecoration(
+            labelText: label,
+            border: const OutlineInputBorder(),
+            filled: true,
+            fillColor: Colors.white,
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          buildField(firstField),
+          const SizedBox(width: 12),
+          buildField(secondField),
+        ],
+      ),
+    );
   }
 
   @override
@@ -128,24 +170,11 @@ class _GoalsScreenState extends State<GoalsScreen> {
           ),
           const SizedBox(height: 20),
 
-          // Creates one text box for each entry in fields.
-          ...fields.entries.map((field) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: TextField(
-                controller: field.value,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: InputDecoration(
-                  labelText: field.key,
-                  border: const OutlineInputBorder(),
-                  filled: true,
-                  fillColor: Colors.white,
-                ),
-              ),
-            );
-          }),
+          _buildFieldRow('Height (cm)', 'Weight (kg)'),
+          _buildFieldRow('Daily calories', 'Daily protein (g)'),
+          _buildFieldRow('Daily fat (g)', 'Daily sugar (g)'),
+          _buildFieldRow('Weekly calories', 'Weekly protein (g)'),
+          _buildFieldRow('Weekly fat (g)', 'Weekly sugar (g)'),
 
           ElevatedButton(
             onPressed: saveGoals,

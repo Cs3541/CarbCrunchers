@@ -31,11 +31,23 @@ void main() {
     expect(dropdown.dropdownColor, Colors.white);
 
     final textFields = tester.widgetList<TextField>(find.byType(TextField));
-    expect(textFields, hasLength(10));
+    expect(textFields, hasLength(13));
     for (final textField in textFields) {
       expect(textField.decoration?.filled, isTrue);
       expect(textField.decoration?.fillColor, Colors.white);
     }
+
+    expect(find.text('Daily carbs (g)'), findsOneWidget);
+    expect(find.text('Daily protein grace (g)'), findsOneWidget);
+    expect(find.text('Daily carbs grace (g)'), findsOneWidget);
+    expect(find.text('Daily fat grace (g)'), findsOneWidget);
+    expect(find.text('Daily sugar grace (g)'), findsOneWidget);
+    expect(find.text('Weekly fat (g)'), findsNothing);
+    expect(find.text('Weekly sugar (g)'), findsNothing);
+    expect(find.text('Protein'), findsOneWidget);
+    expect(find.text('Carbs'), findsOneWidget);
+    expect(find.text('Fat'), findsOneWidget);
+    expect(find.text('Sugar'), findsOneWidget);
   });
 
   testWidgets('Signed-out users must sign up or log in before entering home', (

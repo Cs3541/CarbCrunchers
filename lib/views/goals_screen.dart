@@ -15,35 +15,53 @@ class _GoalsScreenState extends State<GoalsScreen> {
     'Weight (kg)': TextEditingController(),
     'Daily calories': TextEditingController(text: '2000'),
     'Daily protein (g)': TextEditingController(text: '100'),
+    'Daily protein grace (g)': TextEditingController(text: '0'),
+    'Daily carbs (g)': TextEditingController(text: '250'),
+    'Daily carbs grace (g)': TextEditingController(text: '0'),
     'Daily fat (g)': TextEditingController(text: '70'),
+    'Daily fat grace (g)': TextEditingController(text: '0'),
     'Daily sugar (g)': TextEditingController(text: '25'),
+    'Daily sugar grace (g)': TextEditingController(text: '0'),
     'Weekly calories': TextEditingController(text: '14000'),
     'Weekly protein (g)': TextEditingController(text: '700'),
-    'Weekly fat (g)': TextEditingController(text: '490'),
-    'Weekly sugar (g)': TextEditingController(text: '175'),
   };
 
   Map<String, double> saved = {
     'Daily calories': 2000,
     'Daily protein (g)': 100,
+    'Daily protein grace (g)': 0,
+    'Daily carbs (g)': 250,
+    'Daily carbs grace (g)': 0,
     'Daily fat (g)': 70,
+    'Daily fat grace (g)': 0,
     'Daily sugar (g)': 25,
+    'Daily sugar grace (g)': 0,
     'Weekly calories': 14000,
     'Weekly protein (g)': 700,
-    'Weekly fat (g)': 490,
-    'Weekly sugar (g)': 175,
   };
 
   void saveGoals() {
     final values = <String, double>{};
 
     for (final field in fields.entries) {
-      final number = double.tryParse(field.value.text.trim());
+      final text = field.value.text.trim();
+      if (text.isEmpty &&
+          (field.key == 'Height (cm)' || field.key == 'Weight (kg)')) {
+        continue;
+      }
 
-      if (number == null || !number.isFinite || number <= 0) {
+      final number = double.tryParse(text);
+      final isGraceValue = field.key.endsWith('grace (g)');
+
+      if (number == null ||
+          !number.isFinite ||
+          (isGraceValue ? number < 0 : number <= 0)) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${field.key}: enter a number greater than zero.'),
+            content: Text(
+              '${field.key}: enter a number '
+              '${isGraceValue ? 'of zero or greater' : 'greater than zero'}.',
+            ),
           ),
         );
         return;
@@ -70,40 +88,95 @@ class _GoalsScreenState extends State<GoalsScreen> {
 
       fields['Daily calories']!.text = '2000';
       fields['Daily protein (g)']!.text = '$protein';
+      fields['Daily protein grace (g)']!.text = '0';
+      fields['Daily carbs (g)']!.text = '250';
+      fields['Daily carbs grace (g)']!.text = '0';
       fields['Daily fat (g)']!.text = '70';
+      fields['Daily fat grace (g)']!.text = '0';
       fields['Daily sugar (g)']!.text = '25';
+      fields['Daily sugar grace (g)']!.text = '0';
       fields['Weekly calories']!.text = '14000';
       fields['Weekly protein (g)']!.text = '${protein * 7}';
-      fields['Weekly fat (g)']!.text = '490';
-      fields['Weekly sugar (g)']!.text = '175';
     });
   }
 
-  Widget _buildFieldRow(String firstField, String secondField) {
-    Widget buildField(String label) {
-      return Expanded(
-        child: TextField(
-          controller: fields[label],
-          keyboardType: const TextInputType.numberWithOptions(
-            decimal: true,
-          ),
-          decoration: InputDecoration(
-            labelText: label,
-            border: const OutlineInputBorder(),
-            filled: true,
-            fillColor: Colors.white,
-          ),
-        ),
-      );
-    }
+  Widget _buildField(String label) {
+    return TextField(
+      controller: fields[label],
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+        filled: true,
+        fillColor: Colors.white,
+      ),
+    );
+  }
 
+  Widget _buildFieldRow(String firstField, [String? secondField]) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         children: [
-          buildField(firstField),
-          const SizedBox(width: 12),
-          buildField(secondField),
+          Expanded(child: _buildField(firstField)),
+          if (secondField != null) ...[
+            const SizedBox(width: 12),
+            Expanded(child: _buildField(secondField)),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMacroGoalBar({
+    required String label,
+    required String targetKey,
+    required String graceKey,
+    required Color color,
+  }) {
+    final target = saved[targetKey]!;
+    final grace = saved[graceKey]!;
+    final allowedTotal = target + grace;
+    final targetFraction = target / allowedTotal;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+              Text(
+                'Goal ${target.toStringAsFixed(0)} g'
+                '  ·  Grace +${grace.toStringAsFixed(0)} g',
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: SizedBox(
+              height: 16,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  ColoredBox(color: color.withOpacity(0.22)),
+                  FractionallySizedBox(
+                    alignment: Alignment.centerLeft,
+                    widthFactor: targetFraction,
+                    child: ColoredBox(color: color),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Allowed up to ${allowedTotal.toStringAsFixed(0)} g',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
         ],
       ),
     );
@@ -171,10 +244,12 @@ class _GoalsScreenState extends State<GoalsScreen> {
           const SizedBox(height: 20),
 
           _buildFieldRow('Height (cm)', 'Weight (kg)'),
-          _buildFieldRow('Daily calories', 'Daily protein (g)'),
-          _buildFieldRow('Daily fat (g)', 'Daily sugar (g)'),
+          _buildFieldRow('Daily calories'),
+          _buildFieldRow('Daily protein (g)', 'Daily protein grace (g)'),
+          _buildFieldRow('Daily carbs (g)', 'Daily carbs grace (g)'),
+          _buildFieldRow('Daily fat (g)', 'Daily fat grace (g)'),
+          _buildFieldRow('Daily sugar (g)', 'Daily sugar grace (g)'),
           _buildFieldRow('Weekly calories', 'Weekly protein (g)'),
-          _buildFieldRow('Weekly fat (g)', 'Weekly sugar (g)'),
 
           ElevatedButton(
             onPressed: saveGoals,
@@ -219,6 +294,38 @@ class _GoalsScreenState extends State<GoalsScreen> {
           Text(
             '35 g protein = ${proteinPercent.toStringAsFixed(0)}% '
             'of your daily protein target',
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Daily macro goals',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          const Text('Solid color = goal; lighter color = grace allowance.'),
+          const SizedBox(height: 12),
+          _buildMacroGoalBar(
+            label: 'Protein',
+            targetKey: 'Daily protein (g)',
+            graceKey: 'Daily protein grace (g)',
+            color: Colors.blue,
+          ),
+          _buildMacroGoalBar(
+            label: 'Carbs',
+            targetKey: 'Daily carbs (g)',
+            graceKey: 'Daily carbs grace (g)',
+            color: Colors.deepOrange,
+          ),
+          _buildMacroGoalBar(
+            label: 'Fat',
+            targetKey: 'Daily fat (g)',
+            graceKey: 'Daily fat grace (g)',
+            color: Colors.green,
+          ),
+          _buildMacroGoalBar(
+            label: 'Sugar',
+            targetKey: 'Daily sugar (g)',
+            graceKey: 'Daily sugar grace (g)',
+            color: Colors.purple,
           ),
         ],
       ),

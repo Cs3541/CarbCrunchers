@@ -15,6 +15,9 @@ class _GoalsScreenState extends State<GoalsScreen> {
     'Weight (kg)': TextEditingController(),
     'Daily calories': TextEditingController(text: '2000'),
     'Daily protein (g)': TextEditingController(text: '100'),
+    'Daily protein grace (g)': TextEditingController(text: '0'),
+    'Daily carbs (g)': TextEditingController(text: '250'),
+    'Daily carbs grace (g)': TextEditingController(text: '0'),
     'Daily fat (g)': TextEditingController(text: '70'),
     'Daily fat grace (g)': TextEditingController(text: '0'),
     'Daily sugar (g)': TextEditingController(text: '25'),
@@ -26,6 +29,9 @@ class _GoalsScreenState extends State<GoalsScreen> {
   Map<String, double> saved = {
     'Daily calories': 2000,
     'Daily protein (g)': 100,
+    'Daily protein grace (g)': 0,
+    'Daily carbs (g)': 250,
+    'Daily carbs grace (g)': 0,
     'Daily fat (g)': 70,
     'Daily fat grace (g)': 0,
     'Daily sugar (g)': 25,
@@ -76,6 +82,9 @@ class _GoalsScreenState extends State<GoalsScreen> {
 
       fields['Daily calories']!.text = '2000';
       fields['Daily protein (g)']!.text = '$protein';
+      fields['Daily protein grace (g)']!.text = '0';
+      fields['Daily carbs (g)']!.text = '250';
+      fields['Daily carbs grace (g)']!.text = '0';
       fields['Daily fat (g)']!.text = '70';
       fields['Daily fat grace (g)']!.text = '0';
       fields['Daily sugar (g)']!.text = '25';
@@ -103,6 +112,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
       );
     }
 
+  Widget _buildFieldRow(String firstField, [String? secondField]) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -227,6 +237,38 @@ class _GoalsScreenState extends State<GoalsScreen> {
           Text(
             '35 g protein = ${proteinPercent.toStringAsFixed(0)}% '
             'of your daily protein target',
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Daily macro goals',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          const Text('Solid color = goal; lighter color = grace allowance.'),
+          const SizedBox(height: 12),
+          _buildMacroGoalBar(
+            label: 'Protein',
+            targetKey: 'Daily protein (g)',
+            graceKey: 'Daily protein grace (g)',
+            color: Colors.blue,
+          ),
+          _buildMacroGoalBar(
+            label: 'Carbs',
+            targetKey: 'Daily carbs (g)',
+            graceKey: 'Daily carbs grace (g)',
+            color: Colors.deepOrange,
+          ),
+          _buildMacroGoalBar(
+            label: 'Fat',
+            targetKey: 'Daily fat (g)',
+            graceKey: 'Daily fat grace (g)',
+            color: Colors.green,
+          ),
+          _buildMacroGoalBar(
+            label: 'Sugar',
+            targetKey: 'Daily sugar (g)',
+            graceKey: 'Daily sugar grace (g)',
+            color: Colors.purple,
           ),
         ],
       ),

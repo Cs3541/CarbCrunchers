@@ -31,7 +31,7 @@ void main() {
     expect(dropdown.dropdownColor, Colors.white);
 
     final textFields = tester.widgetList<TextField>(find.byType(TextField));
-    expect(textFields, hasLength(6));
+    expect(textFields, hasLength(10));
     for (final textField in textFields) {
       expect(textField.decoration?.filled, isTrue);
       expect(textField.decoration?.fillColor, Colors.white);

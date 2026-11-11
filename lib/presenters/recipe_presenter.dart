@@ -30,18 +30,5 @@ class RecipePresenter {
   Future<void> deleteUserRecipe(Recipe recipe) async {
     await Recipe.deleteUserRecipe(recipe);
     _recipes.removeWhere((r) => r.title == recipe.title);
-    List<Recipe> recipes0 = [];
-    try {
-      final result = await Recipe.fetchRecipesByCategory(
-        category,
-        after: null,
-        pageSize: 20,
-      );
-      final recipes = result['recipes'] as List<Recipe>;
-      final lastDoc = result['lastDoc'];
-      recipes0.addAll(recipes);
-    } catch (e) {
-      print('Error fetching recipes: $e');
-    }
   }
 }

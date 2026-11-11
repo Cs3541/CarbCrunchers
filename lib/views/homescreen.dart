@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 
+import '../Presenters/AuthPresenter.dart';
+import '../widgets/profile_avatar.dart';
 import 'goals_screen.dart';
 
-import 'Presenters/AuthPresenter.dart';
 import 'browserecipes.dart';
-import 'login.dart';
+import 'my_recipe_screen.dart';
+import 'meal_plan_view.dart';
+import '../Views/profile_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -12,6 +17,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authPresenter = AuthPresenter();
+    final database = FirebaseDatabase.instance;
 
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 247, 231, 206),
@@ -41,66 +47,24 @@ class HomeScreen extends StatelessWidget {
                     ),
                     Positioned(
                       left: 0,
-                      child: StreamBuilder(
-                        stream: authPresenter.authStateChanges(),
+                      child: StreamBuilder<User?>(
+                        stream: authPresenter.userChanges(),
                         initialData: authPresenter.currentUser,
                         builder: (context, snapshot) {
                           final user = snapshot.data;
-                          return PopupMenuButton<String>(
-                            tooltip: 'Profile',
-                            child: Material(
-                              color: const Color(0xFF1F5DA8),
-                              shape: const CircleBorder(),
-                              child: const SizedBox(
-                                width: 40.0,
-                                height: 40.0,
-                                child: Icon(
-                                  Icons.account_circle_outlined,
-                                  size: 30.0,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                            onSelected: (action) async {
-                              if (action == 'sign-in') {
-                                await Navigator.push(
+                          if (user == null) {
+                            return _buildProfileButton(context, null);
+                          }
+
+                          return StreamBuilder<DatabaseEvent>(
+                            stream: database
+                                .ref('profileImages/${user.uid}')
+                                .onValue,
+                            builder: (context, imageSnapshot) =>
+                                _buildProfileButton(
                                   context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const LoginScreen(),
-                                  ),
-                                );
-                              } else if (action == 'sign-out') {
-                                try {
-                                  await authPresenter.signOut();
-                                } catch (error) {
-                                  if (!context.mounted) return;
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        'Could not sign out: $error',
-                                      ),
-                                    ),
-                                  );
-                                }
-                              }
-                            },
-                            itemBuilder: (context) => user == null
-                                ? const [
-                                    PopupMenuItem(
-                                      value: 'sign-in',
-                                      child: Text('Sign in / Sign up'),
-                                    ),
-                                  ]
-                                : [
-                                    PopupMenuItem<String>(
-                                      enabled: false,
-                                      child: Text(user.email ?? 'Signed in'),
-                                    ),
-                                    const PopupMenuItem(
-                                      value: 'sign-out',
-                                      child: Text('Sign out'),
-                                    ),
-                                  ],
+                                  imageSnapshot.data?.snapshot.value,
+                                ),
                           );
                         },
                       ),
@@ -134,7 +98,14 @@ class HomeScreen extends StatelessWidget {
                   const SizedBox(width: 16.0),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const MyRecipeScreen(),
+                          ),
+                        );
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF1F5DA8),
                         foregroundColor: Colors.white,
@@ -148,6 +119,28 @@ class HomeScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 16.0),
+
+              // Meal Plan Button
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const MyMealsScreen(),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF1F5DA8),
+                  foregroundColor: Colors.white,
+                ),
+                child: const SizedBox(
+                  height: 72.0,
+                  child: Center(child: Text("My Meals")),
+                ),
+              ),
+              const SizedBox(height: 16.0),
+
               ElevatedButton(
                 onPressed: () {
                   Navigator.push(
@@ -170,6 +163,25 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildProfileButton(BuildContext context, Object? profileData) {
+    return IconButton(
+      tooltip: 'Profile',
+      style: IconButton.styleFrom(
+        backgroundColor: const Color(0xFF1F5DA8),
+        foregroundColor: Colors.white,
+        fixedSize: const Size(40, 40),
+        padding: EdgeInsets.zero,
+      ),
+      icon: ProfileAvatar(profileData: profileData, radius: 20),
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ProfileScreen()),
+        );
+      },
     );
   }
 }

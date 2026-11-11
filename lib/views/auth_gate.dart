@@ -2,13 +2,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'homescreen.dart';
-import 'signup.dart';
+import 'login.dart';
 
 class AuthGate extends StatelessWidget {
   const AuthGate({
     required this.authStateChanges,
     required this.initialUser,
-    this.signedOutScreen = const SignupScreen(),
+    this.signedOutScreen = const LoginScreen(),
     this.signedInScreen = const HomeScreen(),
     super.key,
   });

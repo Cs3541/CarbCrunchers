@@ -30,4 +30,16 @@ class Nutrition {
       sugar: read('sugar'),
     );
   }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'calories': calories,
+      'carbs': carbs,
+      'fat': fat,
+      'fiber': fiber,
+      'protein': protein,
+      'sodium_mg': sodiumMg,
+      'sugar': sugar,
+    };
+  }
 }

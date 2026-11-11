@@ -11,6 +11,7 @@ class AuthScreenLayout extends StatelessWidget {
     required this.switchPrompt,
     required this.switchLabel,
     required this.onSwitch,
+    this.emailLabel = 'Email',
     this.onPasswordReset,
     this.errorMessage,
     super.key,
@@ -25,6 +26,7 @@ class AuthScreenLayout extends StatelessWidget {
   final String switchPrompt;
   final String switchLabel;
   final VoidCallback onSwitch;
+  final String emailLabel;
   final VoidCallback? onPasswordReset;
   final String? errorMessage;
 
@@ -117,7 +119,7 @@ class AuthScreenLayout extends StatelessWidget {
                             textInputAction: TextInputAction.next,
                             autofillHints: const [AutofillHints.email],
                             decoration: _inputDecoration(
-                              label: 'Email',
+                              label: emailLabel,
                               icon: Icons.email_outlined,
                             ),
                           ),

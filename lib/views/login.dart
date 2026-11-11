@@ -2,7 +2,7 @@ import 'package:carb_cruncher/Presenters/AuthPresenter.dart';
 import 'package:flutter/material.dart';
 
 import 'signup.dart';
-import 'widgets/auth_screen_layout.dart';
+import '../widgets/auth_screen_layout.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -73,6 +73,7 @@ class _LoginScreenState extends State<LoginScreen> {
       submitLabel: 'Login',
       onSubmit: handleLogin,
       onPasswordReset: handlePasswordReset,
+      emailLabel: 'Email or username',
       switchPrompt: "Don't have an account?",
       switchLabel: 'Sign up',
       onSwitch: () {

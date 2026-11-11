@@ -15,6 +15,10 @@ class _GoalsScreenState extends State<GoalsScreen> {
     'Weight (kg)': TextEditingController(),
     'Daily calories': TextEditingController(text: '2000'),
     'Daily protein (g)': TextEditingController(text: '100'),
+    'Daily fat (g)': TextEditingController(text: '70'),
+    'Daily fat grace (g)': TextEditingController(text: '0'),
+    'Daily sugar (g)': TextEditingController(text: '25'),
+    'Daily sugar grace (g)': TextEditingController(text: '0'),
     'Weekly calories': TextEditingController(text: '14000'),
     'Weekly protein (g)': TextEditingController(text: '700'),
   };
@@ -22,6 +26,10 @@ class _GoalsScreenState extends State<GoalsScreen> {
   Map<String, double> saved = {
     'Daily calories': 2000,
     'Daily protein (g)': 100,
+    'Daily fat (g)': 70,
+    'Daily fat grace (g)': 0,
+    'Daily sugar (g)': 25,
+    'Daily sugar grace (g)': 0,
     'Weekly calories': 14000,
     'Weekly protein (g)': 700,
   };
@@ -31,11 +39,17 @@ class _GoalsScreenState extends State<GoalsScreen> {
 
     for (final field in fields.entries) {
       final number = double.tryParse(field.value.text.trim());
+      final isGraceValue = field.key.endsWith('grace (g)');
 
-      if (number == null || !number.isFinite || number <= 0) {
+      if (number == null ||
+          !number.isFinite ||
+          (isGraceValue ? number < 0 : number <= 0)) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${field.key}: enter a number greater than zero.'),
+            content: Text(
+              '${field.key}: enter a number '
+              '${isGraceValue ? 'of zero or greater' : 'greater than zero'}.',
+            ),
           ),
         );
         return;
@@ -62,9 +76,45 @@ class _GoalsScreenState extends State<GoalsScreen> {
 
       fields['Daily calories']!.text = '2000';
       fields['Daily protein (g)']!.text = '$protein';
+      fields['Daily fat (g)']!.text = '70';
+      fields['Daily fat grace (g)']!.text = '0';
+      fields['Daily sugar (g)']!.text = '25';
+      fields['Daily sugar grace (g)']!.text = '0';
       fields['Weekly calories']!.text = '14000';
       fields['Weekly protein (g)']!.text = '${protein * 7}';
     });
+  }
+
+  Widget _buildFieldRow(String firstField, [String? secondField]) {
+    Widget buildField(String label) {
+      return Expanded(
+        child: TextField(
+          controller: fields[label],
+          keyboardType: const TextInputType.numberWithOptions(
+            decimal: true,
+          ),
+          decoration: InputDecoration(
+            labelText: label,
+            border: const OutlineInputBorder(),
+            filled: true,
+            fillColor: Colors.white,
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          buildField(firstField),
+          if (secondField != null) ...[
+            const SizedBox(width: 12),
+            buildField(secondField),
+          ],
+        ],
+      ),
+    );
   }
 
   @override
@@ -128,24 +178,11 @@ class _GoalsScreenState extends State<GoalsScreen> {
           ),
           const SizedBox(height: 20),
 
-          // Creates one text box for each entry in fields.
-          ...fields.entries.map((field) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: TextField(
-                controller: field.value,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: InputDecoration(
-                  labelText: field.key,
-                  border: const OutlineInputBorder(),
-                  filled: true,
-                  fillColor: Colors.white,
-                ),
-              ),
-            );
-          }),
+          _buildFieldRow('Height (cm)', 'Weight (kg)'),
+          _buildFieldRow('Daily calories', 'Daily protein (g)'),
+          _buildFieldRow('Daily fat (g)', 'Daily fat grace (g)'),
+          _buildFieldRow('Daily sugar (g)', 'Daily sugar grace (g)'),
+          _buildFieldRow('Weekly calories', 'Weekly protein (g)'),
 
           ElevatedButton(
             onPressed: saveGoals,

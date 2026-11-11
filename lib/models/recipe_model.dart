@@ -1,14 +1,16 @@
-import 'package:carb_cruncher/models/ingredient_model.dart';
-import 'package:carb_cruncher/models/step_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
+import '../models/ingredient_model.dart';
+import '../models/step_model.dart';
 import '../models/nutrition_model.dart';
 import '../models/category_model.dart';
 
 class Recipe {
+  final String? id;
   final String title;
+  final String? description;
   final List<IngredientModel> ingredients;
   final List<StepModel>? steps;
   final String? imageURL;
@@ -18,12 +20,14 @@ class Recipe {
   final int? servings;
 
   Recipe({
+    this.id,
     required this.title,
+    required this.description,
     this.nutrition,
     required this.ingredients,
     this.steps,
     this.imageURL,
-    this.keywords,
+    required this.keywords,
     this.cooktime,
     this.servings,
   });
@@ -71,7 +75,9 @@ class Recipe {
         (map['cook_time_sec'] as num?) ?? (map['total_time_sec'] as num?);
 
     return Recipe(
+      id: id,
       title: (map['title']) as String? ?? '',
+      description: (map['Description']) as String? ?? '',
       ingredients: (map['ingredients'] as List? ?? [])
           .map((e) => IngredientModel.fromMap(Map<String, dynamic>.from(e)))
           .toList(),
@@ -100,7 +106,9 @@ class Recipe {
     return snapshot.docs.map((doc) {
       final data = doc.data();
       return Recipe(
+        id: doc.id,
         title: data['title'] as String? ?? '',
+        description: data['Description'] as String? ?? '',
         ingredients: (data['ingredients'] as List? ?? [])
             .map((e) => IngredientModel.fromMap(Map<String, dynamic>.from(e)))
             .toList(),
@@ -120,22 +128,28 @@ class Recipe {
     }).toList();
   }
 
-  static Future<void> createRecipe(
-    String name,
-    String? description,
-    IngredientModel? ingredients,
-    Nutrition? nutrition,
-    StepModel? steps,
-  ) async {
+  static Future<void> addUserRecipe(Recipe recipe) async {
     final userId = _auth.currentUser?.uid;
     if (userId == null) return;
 
     await _firestore.collection('SavedRecipes').add({
       'userId': userId,
-      'name': name,
-      'description': description,
-      'ingredients': ingredients,
-      'steps': steps,
+      'title': recipe.title,
+      'Description': recipe.description?.trim(),
+      'ingredients': recipe.ingredients
+          .map((ingredient) => ingredient.toMap())
+          .toList(),
+      'image_url': recipe.imageURL,
+      'steps': recipe.steps,
+      'keywords': recipe.keywords,
+      'nutrition': recipe.nutrition?.toMap(),
+      'cook_time_sec': recipe.cooktime != null ? recipe.cooktime! * 60 : null,
+      'servings': recipe.servings,
     });
+  }
+
+  static Future<void> deleteUserRecipe(Recipe recipe) async {
+    final recipeId = recipe.title;
+    await _firestore.collection('SavedRecipes').doc(recipeId).delete();
   }
 }

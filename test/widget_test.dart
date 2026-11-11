@@ -31,7 +31,12 @@ void main() {
     expect(dropdown.dropdownColor, Colors.white);
 
     final textFields = tester.widgetList<TextField>(find.byType(TextField));
-    expect(textFields, hasLength(13));
+    expect(textFields, hasLength(10));
+    expect(find.text('Weekly sugar (g)'), findsNothing);
+    expect(find.text('Weekly sugar grace (g)'), findsNothing);
+    expect(find.text('Daily fat grace (g)'), findsOneWidget);
+    expect(find.text('Daily sugar grace (g)'), findsOneWidget);
+    expect(find.text('Weekly fat (g)'), findsNothing);
     for (final textField in textFields) {
       expect(textField.decoration?.filled, isTrue);
       expect(textField.decoration?.fillColor, Colors.white);
@@ -50,7 +55,7 @@ void main() {
     expect(find.text('Sugar'), findsOneWidget);
   });
 
-  testWidgets('Signed-out users must sign up or log in before entering home', (
+  testWidgets('Signed-out users see login before entering home', (
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(
@@ -63,9 +68,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Create your account'), findsOneWidget);
-    expect(find.text('Sign up'), findsOneWidget);
-    expect(find.text('Already have an account?'), findsOneWidget);
+    expect(find.text('Welcome back'), findsOneWidget);
+    expect(find.text('Login'), findsOneWidget);
+    expect(find.text("Don't have an account?"), findsOneWidget);
     expect(find.text('Browse Recipes'), findsNothing);
   });
 }

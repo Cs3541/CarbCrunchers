@@ -296,6 +296,42 @@ class _GoalsScreenState extends State<GoalsScreen> {
     });
   }
 
+  Future<void> _deleteSelectedPreset() async {
+    if (_isLoading || _loadError != null || _isSaving) return;
+    final name = _selectedPreset;
+    if (name == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete preset?'),
+        content: Text('Delete "$name"? This cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    final presets = List<Map<String, dynamic>>.from(
+      (_data['presets'] as List? ?? const []).map(_asMap),
+    )..removeWhere((preset) => preset['name'] == name);
+    if (!await _saveData({..._data, 'presets': presets})) return;
+
+    if (!mounted) return;
+    setState(() => _selectedPreset = null);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Preset "$name" deleted.')),
+    );
+  }
+
   void changeGoal(String value) {
     setState(() {
       goal = value;
@@ -486,7 +522,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
           ),
           const SizedBox(height: 20),
 
-          if ((_data['presets'] as List? ?? const []).isNotEmpty)
+          if ((_data['presets'] as List? ?? const []).isNotEmpty) ...[
             DropdownButtonFormField<String>(
               key: ValueKey(_selectedPreset),
               initialValue: _selectedPreset,
@@ -505,6 +541,20 @@ class _GoalsScreenState extends State<GoalsScreen> {
                   .toList(),
               onChanged: _loadError == null ? _applyPreset : null,
             ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: _selectedPreset == null ||
+                        _isLoading ||
+                        _loadError != null ||
+                        _isSaving
+                    ? null
+                    : _deleteSelectedPreset,
+                icon: const Icon(Icons.delete_outline),
+                label: const Text('Delete selected preset'),
+              ),
+            ),
+          ],
 
           _buildFieldRow('Height (cm)', 'Weight (kg)'),
           _buildFieldRow('Daily calories'),

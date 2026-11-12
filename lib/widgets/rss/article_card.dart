@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 class ArticleCard extends StatelessWidget {
   final RssItem article;
 
-  const ArticleCard({super.key, required this.article});
+  ArticleCard({super.key, required this.article});
+  final _controller = ScrollController();
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +43,38 @@ class ArticleCard extends StatelessWidget {
                       article.description ?? '',
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
+                    ),
+
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 4),
+                        Text(
+                          'Published on: ${article.pubDate ?? 'N/A'}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                        ),
+
+                        const SizedBox(height: 4),
+                        SingleChildScrollView(
+                          controller: _controller,
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              for (final category in article.categories ?? [])
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 4.0),
+                                  child: Chip(
+                                    label: Text(category),
+                                    backgroundColor: Colors.blue[100],
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

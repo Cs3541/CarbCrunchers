@@ -15,9 +15,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
     'Weight (kg)': TextEditingController(),
     'Daily calories': TextEditingController(text: '2000'),
     'Daily protein (g)': TextEditingController(text: '100'),
-    'Daily protein grace (g)': TextEditingController(text: '0'),
     'Daily carbs (g)': TextEditingController(text: '250'),
-    'Daily carbs grace (g)': TextEditingController(text: '0'),
     'Daily fat (g)': TextEditingController(text: '70'),
     'Daily fat grace (g)': TextEditingController(text: '0'),
     'Daily sugar (g)': TextEditingController(text: '25'),
@@ -29,9 +27,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
   Map<String, double> saved = {
     'Daily calories': 2000,
     'Daily protein (g)': 100,
-    'Daily protein grace (g)': 0,
     'Daily carbs (g)': 250,
-    'Daily carbs grace (g)': 0,
     'Daily fat (g)': 70,
     'Daily fat grace (g)': 0,
     'Daily sugar (g)': 25,
@@ -88,9 +84,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
 
       fields['Daily calories']!.text = '2000';
       fields['Daily protein (g)']!.text = '$protein';
-      fields['Daily protein grace (g)']!.text = '0';
       fields['Daily carbs (g)']!.text = '250';
-      fields['Daily carbs grace (g)']!.text = '0';
       fields['Daily fat (g)']!.text = '70';
       fields['Daily fat grace (g)']!.text = '0';
       fields['Daily sugar (g)']!.text = '25';
@@ -129,13 +123,13 @@ class _GoalsScreenState extends State<GoalsScreen> {
   Widget _buildMacroGoalBar({
     required String label,
     required String targetKey,
-    required String graceKey,
+    String? graceKey,
     required Color color,
   }) {
     final target = saved[targetKey]!;
-    final grace = saved[graceKey]!;
+    final grace = graceKey == null ? 0.0 : saved[graceKey]!;
     final allowedTotal = target + grace;
-    final targetFraction = target / allowedTotal;
+    final targetFraction = graceKey == null ? 1.0 : target / allowedTotal;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -146,10 +140,13 @@ class _GoalsScreenState extends State<GoalsScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
-              Text(
-                'Goal ${target.toStringAsFixed(0)} g'
-                '  ·  Grace +${grace.toStringAsFixed(0)} g',
-              ),
+              if (graceKey == null)
+                Text('Goal ${target.toStringAsFixed(0)} g')
+              else
+                Text(
+                  'Goal ${target.toStringAsFixed(0)} g'
+                  '  ·  Grace +${grace.toStringAsFixed(0)} g',
+                ),
             ],
           ),
           const SizedBox(height: 6),
@@ -161,20 +158,29 @@ class _GoalsScreenState extends State<GoalsScreen> {
                 fit: StackFit.expand,
                 children: [
                   ColoredBox(color: color.withOpacity(0.22)),
-                  FractionallySizedBox(
-                    alignment: Alignment.centerLeft,
-                    widthFactor: targetFraction,
-                    child: ColoredBox(color: color),
-                  ),
+                  if (graceKey != null)
+                    FractionallySizedBox(
+                      alignment: Alignment.centerLeft,
+                      widthFactor: targetFraction,
+                      child: ColoredBox(color: color),
+                    )
+                  else
+                    ColoredBox(color: color),
                 ],
               ),
             ),
           ),
           const SizedBox(height: 4),
-          Text(
-            'Allowed up to ${allowedTotal.toStringAsFixed(0)} g',
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
+          if (graceKey != null)
+            Text(
+              'Allowed up to ${allowedTotal.toStringAsFixed(0)} g',
+              style: Theme.of(context).textTheme.bodySmall,
+            )
+          else
+            Text(
+              'Target ${target.toStringAsFixed(0)} g',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
         ],
       ),
     );
@@ -243,8 +249,8 @@ class _GoalsScreenState extends State<GoalsScreen> {
 
           _buildFieldRow('Height (cm)', 'Weight (kg)'),
           _buildFieldRow('Daily calories'),
-          _buildFieldRow('Daily protein (g)', 'Daily protein grace (g)'),
-          _buildFieldRow('Daily carbs (g)', 'Daily carbs grace (g)'),
+          _buildFieldRow('Daily protein (g)'),
+          _buildFieldRow('Daily carbs (g)'),
           _buildFieldRow('Daily fat (g)', 'Daily fat grace (g)'),
           _buildFieldRow('Daily sugar (g)', 'Daily sugar grace (g)'),
           _buildFieldRow('Weekly calories', 'Weekly protein (g)'),
@@ -299,18 +305,16 @@ class _GoalsScreenState extends State<GoalsScreen> {
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
-          const Text('Solid color = goal; lighter color = grace allowance.'),
+          const Text('Solid color = target; lighter color = grace allowance.'),
           const SizedBox(height: 12),
           _buildMacroGoalBar(
             label: 'Protein',
             targetKey: 'Daily protein (g)',
-            graceKey: 'Daily protein grace (g)',
             color: Colors.blue,
           ),
           _buildMacroGoalBar(
             label: 'Carbs',
             targetKey: 'Daily carbs (g)',
-            graceKey: 'Daily carbs grace (g)',
             color: Colors.deepOrange,
           ),
           _buildMacroGoalBar(

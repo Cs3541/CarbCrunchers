@@ -71,6 +71,46 @@ void main() {
     }
   });
 
+  testWidgets('Selected presets can be deleted', (
+    WidgetTester tester,
+  ) async {
+    tester.view.physicalSize = const Size(800, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final repository = FakeGoalsRepository()
+      ..data = {
+        'presets': [
+          {
+            'name': 'High protein',
+            'focus': 'More protein',
+            'values': {'Daily protein (g)': 150},
+          },
+        ],
+      };
+    await tester.pumpWidget(
+      MaterialApp(home: GoalsScreen(repository: repository)),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Use a saved preset'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('High protein').last);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Delete selected preset'));
+    await tester.pumpAndSettle();
+    expect(find.text('Delete "High protein"? This cannot be undone.'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(TextButton, 'Delete'));
+    await tester.pumpAndSettle();
+
+    expect(repository.data['presets'], isEmpty);
+    expect(find.text('Use a saved preset'), findsNothing);
+    expect(find.text('Preset "High protein" deleted.'), findsOneWidget);
+  });
+
   testWidgets('Saving fat grace updates the graph threshold', (
     WidgetTester tester,
   ) async {

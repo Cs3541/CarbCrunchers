@@ -1,6 +1,7 @@
 import 'package:carb_cruncher/models/rss/feed_repository.dart';
 import 'package:carb_cruncher/models/rss/rss_item.dart';
 import 'package:carb_cruncher/presenters/rss/feed_presenter.dart';
+import 'package:carb_cruncher/views/article_page.dart';
 import 'package:carb_cruncher/widgets/rss/article_card.dart';
 import 'package:flutter/material.dart';
 
@@ -100,10 +101,5 @@ class _ArticlesPageState extends State<ArticlesPage> implements FeedView {
         itemCount: _items.length,
       ),
     );
-  }
-
-  @override
-  void openItem(RssItem item) {
-    // TODO: implement openItem
   }
 }

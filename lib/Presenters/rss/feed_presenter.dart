@@ -7,7 +7,6 @@ abstract class FeedView {
   void showLoading();
   void showItems(List<RssItem> items);
   void showError(String message);
-  void openItem(RssItem item);
 }
 
 class FeedPresenter {
@@ -29,10 +28,6 @@ class FeedPresenter {
       if (_disposed) return;
       view.showError(e.toString());
     }
-  }
-
-  void onItemTapped(RssItem item) {
-    view.openItem(item);
   }
 
   void dispose() {

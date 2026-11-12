@@ -38,12 +38,16 @@ class RssItem {
         .getElement("media:content")
         ?.getAttribute("url");
 
+    String? author = XmlDocument.parse(xml).rootElement
+        .getElement("dc:creator")
+        ?.innerText;
+
     return RssItem(
       title: text("title"),
       link: text("link"),
       mediaUrl: mediaUrl ?? '', // Use the media URL if available, otherwise default to an empty string
       commentsUrl: text("comments"),
-      author: text("author"),
+      author: author ?? 'NutritionFacts.org author', // Use the author if available, otherwise default to an empty string
       pubDate: text("pubDate"),
       categories: XmlDocument.parse(xml).rootElement
           .findElements("category")

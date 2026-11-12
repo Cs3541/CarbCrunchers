@@ -66,7 +66,6 @@ class ArticleCard extends StatelessWidget {
                               color: Colors.grey,
                             ),
                           ),
-                          // kaylee johnson and erika and kaylee
                           const SizedBox(height: 8),
 
                           Text("Author: ${article.author}"),

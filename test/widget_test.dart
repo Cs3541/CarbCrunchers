@@ -32,16 +32,16 @@ void main() {
     expect(dropdown.dropdownColor, Colors.white);
 
     final textFields = tester.widgetList<TextField>(find.byType(TextField));
-    expect(textFields, hasLength(13));
+    expect(textFields, hasLength(11));
     expect(find.text('Weekly sugar (g)'), findsNothing);
     expect(find.text('Weekly sugar grace (g)'), findsNothing);
     expect(find.text('Daily fat grace (g)'), findsOneWidget);
     expect(find.text('Daily sugar grace (g)'), findsOneWidget);
     expect(find.text('Weekly fat (g)'), findsNothing);
     expect(find.text('Weekly sugar (g)'), findsNothing);
-    expect(find.text('Daily protein grace (g)'), findsOneWidget);
+    expect(find.text('Daily protein grace (g)'), findsNothing);
+    expect(find.text('Daily carbs grace (g)'), findsNothing);
     expect(find.text('Daily carbs (g)'), findsOneWidget);
-    expect(find.text('Daily carbs grace (g)'), findsOneWidget);
     expect(find.text('Protein'), findsOneWidget);
     expect(find.text('Carbs'), findsOneWidget);
     expect(find.text('Fat'), findsOneWidget);
@@ -52,7 +52,7 @@ void main() {
     }
   });
 
-  testWidgets('Saving macro grace updates the graph threshold', (
+  testWidgets('Saving fat grace updates the graph threshold', (
     WidgetTester tester,
   ) async {
     tester.view.physicalSize = const Size(800, 2400);
@@ -62,16 +62,16 @@ void main() {
 
     await tester.pumpWidget(const MaterialApp(home: GoalsScreen()));
 
-    final proteinGraceField = find.byWidgetPredicate(
+    final fatGraceField = find.byWidgetPredicate(
       (widget) =>
           widget is TextField &&
-          widget.decoration?.labelText == 'Daily protein grace (g)',
+          widget.decoration?.labelText == 'Daily fat grace (g)',
     );
-    await tester.enterText(proteinGraceField, '15');
+    await tester.enterText(fatGraceField, '15');
     await tester.tap(find.text('Save Profile and Goals'));
     await tester.pump();
 
-    expect(find.text('Allowed up to 115 g'), findsOneWidget);
+    expect(find.text('Allowed up to 85 g'), findsOneWidget);
   });
 
   testWidgets('Signed-out users see login before entering home', (

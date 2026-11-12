@@ -11,6 +11,19 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:carb_cruncher/views/auth_gate.dart';
 import 'package:carb_cruncher/views/goals_screen.dart';
 import 'package:carb_cruncher/views/history_screen.dart';
+import 'package:carb_cruncher/models/goals_repository.dart';
+
+class FakeGoalsRepository implements GoalsRepository {
+  Map<String, dynamic> data = {};
+
+  @override
+  Future<Map<String, dynamic>> load() async => Map.of(data);
+
+  @override
+  Future<void> save(Map<String, dynamic> data) async {
+    this.data = Map.of(data);
+  }
+}
 
 void main() {
   testWidgets('Goals screen displays its configuration controls', (
@@ -21,10 +34,13 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(const MaterialApp(home: GoalsScreen()));
+    await tester.pumpWidget(
+      MaterialApp(home: GoalsScreen(repository: FakeGoalsRepository())),
+    );
+    await tester.pumpAndSettle();
 
     expect(find.text('My Goals'), findsOneWidget);
-    expect(find.text('Goal focus'), findsOneWidget);
+    expect(find.text("Next week's goal focus"), findsOneWidget);
 
     final dropdown = tester.widget<DropdownButton<String>>(
       find.byType(DropdownButton<String>),
@@ -42,6 +58,9 @@ void main() {
     expect(find.text('Daily protein grace (g)'), findsNothing);
     expect(find.text('Daily carbs grace (g)'), findsNothing);
     expect(find.text('Daily carbs (g)'), findsOneWidget);
+    expect(find.text('Calories'), findsOneWidget);
+    expect(find.text('Goal 2000 calories'), findsOneWidget);
+    expect(find.text('Target 2000 calories'), findsOneWidget);
     expect(find.text('Protein'), findsOneWidget);
     expect(find.text('Carbs'), findsOneWidget);
     expect(find.text('Fat'), findsOneWidget);
@@ -60,7 +79,11 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(const MaterialApp(home: GoalsScreen()));
+    final repository = FakeGoalsRepository();
+    await tester.pumpWidget(
+      MaterialApp(home: GoalsScreen(repository: repository)),
+    );
+    await tester.pumpAndSettle();
 
     final fatGraceField = find.byWidgetPredicate(
       (widget) =>
@@ -68,10 +91,65 @@ void main() {
           widget.decoration?.labelText == 'Daily fat grace (g)',
     );
     await tester.enterText(fatGraceField, '15');
-    await tester.tap(find.text('Save Profile and Goals'));
-    await tester.pump();
+    await tester.tap(find.text("Save Next Week's Goals"));
+    await tester.pumpAndSettle();
 
-    expect(find.text('Allowed up to 85 g'), findsOneWidget);
+    expect(find.text("Next week's goals saved."), findsOneWidget);
+    final weeks = repository.data['weeks'] as Map<String, dynamic>;
+    final nextGoals = weeks.values
+        .map((week) => week as Map<String, dynamic>)
+        .singleWhere(
+          (week) =>
+              (week['values'] as Map<String, dynamic>)['Daily fat grace (g)'] ==
+              15,
+        );
+    expect(
+      (nextGoals['values'] as Map<String, dynamic>)['Daily fat grace (g)'],
+      15,
+    );
+    expect(find.text('Allowed up to 70 g'), findsOneWidget);
+  });
+
+  testWidgets('Saving defaults does not change the locked current week', (
+    WidgetTester tester,
+  ) async {
+    tester.view.physicalSize = const Size(800, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final repository = FakeGoalsRepository();
+    await tester.pumpWidget(
+      MaterialApp(home: GoalsScreen(repository: repository)),
+    );
+    await tester.pumpAndSettle();
+
+    final proteinField = find.byWidgetPredicate(
+      (widget) =>
+          widget is TextField &&
+          widget.decoration?.labelText == 'Daily protein (g)',
+    );
+    await tester.enterText(proteinField, '140');
+    await tester.tap(find.text('Set as Default'));
+    await tester.pumpAndSettle();
+
+    final defaultGoals = repository.data['defaultGoals'] as Map<String, dynamic>;
+    expect(
+      (defaultGoals['values'] as Map<String, dynamic>)['Daily protein (g)'],
+      140,
+    );
+    final weeks = repository.data['weeks'] as Map<String, dynamic>;
+    final currentWeek = weeks.values
+        .map((week) => week as Map<String, dynamic>)
+        .singleWhere(
+          (week) =>
+              (week['values'] as Map<String, dynamic>)['Daily protein (g)'] ==
+              100,
+        );
+    expect(
+      (currentWeek['values'] as Map<String, dynamic>)['Daily protein (g)'],
+      100,
+    );
   });
 
   testWidgets('Signed-out users see login before entering home', (

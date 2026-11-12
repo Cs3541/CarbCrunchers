@@ -1,3 +1,4 @@
+import 'package:carb_cruncher/views/articles_page.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -157,6 +158,19 @@ class HomeScreen extends StatelessWidget {
                 child: const SizedBox(
                   height: 72.0,
                   child: Center(child: Text('Goals')),
+                ),
+              ),
+
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ArticlesPage()),
+                  );
+                },
+                child: const SizedBox(
+                  height: 72.0,
+                  child: Center(child: Text('Articles')),
                 ),
               ),
             ],

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../models/goals_repository.dart';
+
 class GoalsScreen extends StatefulWidget {
-  const GoalsScreen({super.key});
+  const GoalsScreen({super.key, this.repository});
+
+  final GoalsRepository? repository;
 
   @override
   State<GoalsScreen> createState() => _GoalsScreenState();
@@ -9,6 +13,13 @@ class GoalsScreen extends StatefulWidget {
 
 class _GoalsScreenState extends State<GoalsScreen> {
   String goal = 'Balanced';
+  late final GoalsRepository _repository;
+  bool _isLoading = true;
+  bool _isSaving = false;
+  String? _loadError;
+  String? _selectedPreset;
+  String currentGoal = 'Balanced';
+  Map<String, dynamic> _data = {};
 
   final fields = {
     'Height (cm)': TextEditingController(),
@@ -36,7 +47,112 @@ class _GoalsScreenState extends State<GoalsScreen> {
     'Weekly protein (g)': 700,
   };
 
-  void saveGoals() {
+  static const _defaultGoals = <String, double>{
+    'Daily calories': 2000,
+    'Daily protein (g)': 100,
+    'Daily carbs (g)': 250,
+    'Daily fat (g)': 70,
+    'Daily fat grace (g)': 0,
+    'Daily sugar (g)': 25,
+    'Daily sugar grace (g)': 0,
+    'Weekly calories': 14000,
+    'Weekly protein (g)': 700,
+  };
+
+  DateTime get _currentWeek => _weekStart(DateTime.now());
+  DateTime get _nextWeek => _currentWeek.add(const Duration(days: 7));
+  String get _currentWeekKey => _weekKey(_currentWeek);
+  String get _nextWeekKey => _weekKey(_nextWeek);
+
+  static DateTime _weekStart(DateTime date) {
+    final daysFromMonday = date.weekday - DateTime.monday;
+    return DateTime(date.year, date.month, date.day - daysFromMonday);
+  }
+
+  static String _weekKey(DateTime date) =>
+      '${date.year.toString().padLeft(4, '0')}-'
+      '${date.month.toString().padLeft(2, '0')}-'
+      '${date.day.toString().padLeft(2, '0')}';
+
+  static Map<String, dynamic> _asMap(dynamic value) {
+    if (value is! Map) return <String, dynamic>{};
+    return value.map((key, value) => MapEntry(key.toString(), value));
+  }
+
+  Map<String, dynamic> _config(
+    String focus,
+    Map<String, double> values,
+  ) => {
+    'focus': focus,
+    'values': values,
+  };
+
+  Map<String, dynamic> _readConfig(dynamic value) {
+    final config = _asMap(value);
+    final rawValues = _asMap(config['values']);
+    final values = <String, double>{};
+
+    for (final key in _defaultGoals.keys) {
+      final number = rawValues[key];
+      values[key] = number is num ? number.toDouble() : _defaultGoals[key]!;
+    }
+
+    return {
+      'focus': config['focus'] is String ? config['focus'] as String : 'Balanced',
+      'values': values,
+    };
+  }
+
+  Map<String, dynamic> _configForEditor(Map<String, dynamic> config) {
+    final values = _asMap(config['values']);
+    for (final field in fields.entries) {
+      field.value.text = values[field.key]?.toString() ?? '';
+    }
+    return config;
+  }
+
+  Future<void> _loadGoals() async {
+    try {
+      var data = await _repository.load();
+      final weeks = _asMap(data['weeks']);
+      final defaultConfig = _readConfig(data['defaultGoals'] ?? {
+        'focus': 'Balanced',
+        'values': _defaultGoals,
+      });
+      final currentConfig = _readConfig(
+        weeks[_currentWeekKey] ?? defaultConfig,
+      );
+      final nextConfig = _readConfig(
+        weeks[_nextWeekKey] ?? defaultConfig,
+      );
+
+      if (!weeks.containsKey(_currentWeekKey)) {
+        weeks[_currentWeekKey] = currentConfig;
+        data = {...data, 'weeks': weeks};
+        await _repository.save(data);
+      }
+
+      if (!mounted) return;
+      setState(() {
+        _data = data;
+        saved = Map<String, double>.from(_asMap(currentConfig['values']).map(
+          (key, value) => MapEntry(key, (value as num).toDouble()),
+        ));
+        currentGoal = currentConfig['focus'] as String;
+        goal = nextConfig['focus'] as String;
+        _configForEditor(nextConfig);
+        _isLoading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _loadError = 'Could not load goals: $error';
+        _isLoading = false;
+      });
+    }
+  }
+
+  Map<String, double>? _readFields() {
     final values = <String, double>{};
 
     for (final field in fields.entries) {
@@ -60,19 +176,124 @@ class _GoalsScreenState extends State<GoalsScreen> {
             ),
           ),
         );
-        return;
+        return null;
       }
 
       values[field.key] = number;
     }
 
-    setState(() {
-      saved = values;
-    });
+    return values;
+  }
+
+  Future<bool> _saveData(Map<String, dynamic> updated) async {
+    setState(() => _isSaving = true);
+    try {
+      await _repository.save(updated);
+      if (!mounted) return false;
+      setState(() {
+        _data = updated;
+        _isSaving = false;
+      });
+      return true;
+    } catch (error) {
+      if (!mounted) return false;
+      setState(() => _isSaving = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not save goals: $error')),
+      );
+      return false;
+    }
+  }
+
+  Future<void> saveGoals() async {
+    if (_isLoading || _loadError != null || _isSaving) return;
+    final values = _readFields();
+    if (values == null) return;
+
+    final weeks = _asMap(_data['weeks']);
+    weeks[_nextWeekKey] = _config(goal, values);
+    final updated = {..._data, 'weeks': weeks};
+    if (!await _saveData(updated)) return;
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Next week's goals saved.")),
+    );
+  }
+
+  Future<void> saveAsDefault() async {
+    if (_isLoading || _loadError != null || _isSaving) return;
+    final values = _readFields();
+    if (values == null) return;
+
+    final updated = {
+      ..._data,
+      'defaultGoals': _config(goal, values),
+    };
+    if (!await _saveData(updated)) return;
+    if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Profile and goals updated.')),
+      const SnackBar(content: Text('Default goals saved for future weeks.')),
     );
+  }
+
+  Future<void> savePreset() async {
+    if (_isLoading || _loadError != null || _isSaving) return;
+    final values = _readFields();
+    if (values == null) return;
+
+    final nameController = TextEditingController();
+    final name = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Save goal preset'),
+        content: TextField(
+          controller: nameController,
+          autofocus: true,
+          decoration: const InputDecoration(labelText: 'Preset name'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, nameController.text.trim()),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+    nameController.dispose();
+    if (name == null || name.isEmpty || !mounted) return;
+
+    final presets = List<Map<String, dynamic>>.from(
+      (_data['presets'] as List? ?? const []).map(_asMap),
+    );
+    presets.removeWhere((preset) => preset['name'] == name);
+    presets.add({'name': name, ..._config(goal, values)});
+    if (!await _saveData({..._data, 'presets': presets})) return;
+
+    if (!mounted) return;
+    setState(() => _selectedPreset = name);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Preset "$name" saved.')),
+    );
+  }
+
+  void _applyPreset(String? name) {
+    if (name == null) return;
+    final presets = (_data['presets'] as List? ?? const [])
+        .map(_asMap)
+        .where((preset) => preset['name'] == name);
+    if (presets.isEmpty) return;
+    final config = _readConfig(presets.first);
+    setState(() {
+      _selectedPreset = name;
+      goal = config['focus'] as String;
+      _configForEditor(config);
+    });
   }
 
   void changeGoal(String value) {
@@ -92,6 +313,13 @@ class _GoalsScreenState extends State<GoalsScreen> {
       fields['Weekly calories']!.text = '14000';
       fields['Weekly protein (g)']!.text = '${protein * 7}';
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _repository = widget.repository ?? FirestoreGoalsRepository();
+    _loadGoals();
   }
 
   Widget _buildFieldRow(String firstField, [String? secondField]) {
@@ -123,6 +351,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
   Widget _buildMacroGoalBar({
     required String label,
     required String targetKey,
+    String unit = 'g',
     String? graceKey,
     required Color color,
   }) {
@@ -141,11 +370,11 @@ class _GoalsScreenState extends State<GoalsScreen> {
             children: [
               Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
               if (graceKey == null)
-                Text('Goal ${target.toStringAsFixed(0)} g')
+                Text('Goal ${target.toStringAsFixed(0)} $unit')
               else
                 Text(
-                  'Goal ${target.toStringAsFixed(0)} g'
-                  '  ·  Grace +${grace.toStringAsFixed(0)} g',
+                  'Goal ${target.toStringAsFixed(0)} $unit'
+                  '  ·  Grace +${grace.toStringAsFixed(0)} $unit',
                 ),
             ],
           ),
@@ -173,12 +402,12 @@ class _GoalsScreenState extends State<GoalsScreen> {
           const SizedBox(height: 4),
           if (graceKey != null)
             Text(
-              'Allowed up to ${allowedTotal.toStringAsFixed(0)} g',
+              'Allowed up to ${allowedTotal.toStringAsFixed(0)} $unit',
               style: Theme.of(context).textTheme.bodySmall,
             )
           else
             Text(
-              'Target ${target.toStringAsFixed(0)} g',
+              'Target ${target.toStringAsFixed(0)} $unit',
               style: Theme.of(context).textTheme.bodySmall,
             ),
         ],
@@ -208,17 +437,28 @@ class _GoalsScreenState extends State<GoalsScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          const Text(
-            'Demo: targets and food totals are examples. '
-            'Changes reset when you leave this screen.',
+          if (_isLoading)
+            const LinearProgressIndicator()
+          else if (_loadError != null)
+            Text(_loadError!, style: const TextStyle(color: Colors.red)),
+          Text(
+            'This week (${_weekKey(_currentWeek)}): goals are locked. '
+            'You can edit next week any time before it starts '
+            '(${_weekKey(_nextWeek)}).',
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Current focus: $currentGoal',
+            style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 20),
 
           DropdownButtonFormField<String>(
             initialValue: goal,
+            key: ValueKey(goal),
             dropdownColor: Colors.white,
             decoration: const InputDecoration(
-              labelText: 'Goal focus',
+              labelText: "Next week's goal focus",
               border: OutlineInputBorder(),
               filled: true,
               fillColor: Colors.white,
@@ -234,7 +474,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
               ),
             ],
             onChanged: (value) {
-              if (value != null) {
+              if (value != null && !_isLoading && _loadError == null) {
                 changeGoal(value);
               }
             },
@@ -242,10 +482,29 @@ class _GoalsScreenState extends State<GoalsScreen> {
 
           const SizedBox(height: 8),
           const Text(
-            'Changing your focus fills in sample starter targets. '
-            'You can edit them before saving.',
+            'Edit these goals for next week; current-week goals cannot be changed.',
           ),
           const SizedBox(height: 20),
+
+          if ((_data['presets'] as List? ?? const []).isNotEmpty)
+            DropdownButtonFormField<String>(
+              key: ValueKey(_selectedPreset),
+              initialValue: _selectedPreset,
+              decoration: const InputDecoration(
+                labelText: 'Use a saved preset',
+                border: OutlineInputBorder(),
+              ),
+              items: (_data['presets'] as List)
+                  .map(_asMap)
+                  .map(
+                    (preset) => DropdownMenuItem<String>(
+                      value: preset['name'] as String,
+                      child: Text(preset['name'] as String),
+                    ),
+                  )
+                  .toList(),
+              onChanged: _loadError == null ? _applyPreset : null,
+            ),
 
           _buildFieldRow('Height (cm)', 'Weight (kg)'),
           _buildFieldRow('Daily calories'),
@@ -256,8 +515,27 @@ class _GoalsScreenState extends State<GoalsScreen> {
           _buildFieldRow('Weekly calories', 'Weekly protein (g)'),
 
           ElevatedButton(
-            onPressed: saveGoals,
-            child: const Text('Save Profile and Goals'),
+            onPressed: _isLoading || _loadError != null || _isSaving
+                ? null
+                : saveGoals,
+            child: const Text("Save Next Week's Goals"),
+          ),
+          Wrap(
+            spacing: 8,
+            children: [
+              OutlinedButton(
+                onPressed: _isLoading || _loadError != null || _isSaving
+                    ? null
+                    : saveAsDefault,
+                child: const Text('Set as Default'),
+              ),
+              OutlinedButton(
+                onPressed: _isLoading || _loadError != null || _isSaving
+                    ? null
+                    : savePreset,
+                child: const Text('Save as Preset'),
+              ),
+            ],
           ),
 
           const SizedBox(height: 24),
@@ -301,12 +579,18 @@ class _GoalsScreenState extends State<GoalsScreen> {
           ),
           const SizedBox(height: 24),
           Text(
-            'Daily macro goals',
+            'Daily nutrition goals',
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
           const Text('Solid color = target; lighter color = grace allowance.'),
           const SizedBox(height: 12),
+          _buildMacroGoalBar(
+            label: 'Calories',
+            targetKey: 'Daily calories',
+            unit: 'calories',
+            color: Colors.red,
+          ),
           _buildMacroGoalBar(
             label: 'Protein',
             targetKey: 'Daily protein (g)',

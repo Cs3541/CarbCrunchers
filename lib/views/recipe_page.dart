@@ -1,3 +1,4 @@
+import 'package:carb_cruncher/interactive_recipe_screen.dart';
 import 'package:carb_cruncher/models/nutrition_model.dart';
 import 'package:flutter/material.dart';
 
@@ -163,7 +164,15 @@ class _RecipePageState extends State<RecipePage> {
       floatingActionButton: steps.isEmpty
           ? null
           : FloatingActionButton.extended(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        InteractiveRecipeScreen(recipe: recipe),
+                  ),
+                );
+              },
               icon: const Icon(Icons.play_arrow),
               label: const Text('Start cooking'),
             ),

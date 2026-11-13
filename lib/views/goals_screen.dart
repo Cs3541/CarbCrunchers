@@ -1,23 +1,55 @@
 import 'package:flutter/material.dart';
 
-class GoalsScreen extends StatefulWidget {
+import '../nutrition/day_history_view.dart';
+import '../nutrition/nutrition_day.dart';
+import '../nutrition/nutrition_store.dart';
+
+class GoalsScreen extends StatelessWidget {
   const GoalsScreen({super.key});
 
   @override
-  State<GoalsScreen> createState() => _GoalsScreenState();
+  Widget build(BuildContext context) {
+    return DayHistoryView(
+      builder: (days, today) {
+        final id = dayId(today);
+
+        return GoalEditor(
+          key: ValueKey('$id-${days.containsKey(id)}'),
+          days: days,
+          today: today,
+          save: NutritionStore().saveGoals,
+        );
+      },
+    );
+  }
 }
 
-class _GoalsScreenState extends State<GoalsScreen> {
+class GoalEditor extends StatefulWidget {
+  final History days;
+  final DateTime today;
+  final Future<void> Function(String, Numbers, String) save;
+
+  const GoalEditor({
+    super.key,
+    required this.days,
+    required this.today,
+    required this.save,
+  });
+
+  @override
+  State<GoalEditor> createState() => _GoalEditorState();
+}
+
+class _GoalEditorState extends State<GoalEditor> {
   String goal = 'Balanced';
+  bool saving = false;
 
   final fields = {
-    'Height (cm)': TextEditingController(),
-    'Weight (kg)': TextEditingController(),
+    'Height (inches)': TextEditingController(),
+    'Weight (lbs)': TextEditingController(),
     'Daily calories': TextEditingController(text: '2000'),
     'Daily protein (g)': TextEditingController(text: '100'),
-    'Daily protein grace (g)': TextEditingController(text: '0'),
     'Daily carbs (g)': TextEditingController(text: '250'),
-    'Daily carbs grace (g)': TextEditingController(text: '0'),
     'Daily fat (g)': TextEditingController(text: '70'),
     'Daily fat grace (g)': TextEditingController(text: '0'),
     'Daily sugar (g)': TextEditingController(text: '25'),
@@ -26,41 +58,55 @@ class _GoalsScreenState extends State<GoalsScreen> {
     'Weekly protein (g)': TextEditingController(text: '700'),
   };
 
-  Map<String, double> saved = {
-    'Daily calories': 2000,
-    'Daily protein (g)': 100,
-    'Daily protein grace (g)': 0,
-    'Daily carbs (g)': 250,
-    'Daily carbs grace (g)': 0,
-    'Daily fat (g)': 70,
-    'Daily fat grace (g)': 0,
-    'Daily sugar (g)': 25,
-    'Daily sugar grace (g)': 0,
-    'Weekly calories': 14000,
-    'Weekly protein (g)': 700,
-  };
+  String get todayId => dayId(widget.today);
+  NutritionDay? get today => widget.days[todayId];
 
-  void saveGoals() {
+  @override
+  void initState() {
+    super.initState();
+
+    // Start a new day with the user's most recently saved goals.
+    final dates = widget.days.keys
+        .where((id) => id.compareTo(todayId) <= 0)
+        .toList()
+      ..sort();
+
+    if (dates.isEmpty) return;
+
+    final previous = widget.days[dates.last]!;
+    goal = previous.focus;
+
+    for (final entry in previous.goals.entries) {
+      fields[entry.key]?.text = entry.value.toString();
+    }
+  }
+
+  Future<void> saveGoals() async {
+    if (saving || today != null) return;
+
     final values = <String, double>{};
 
     for (final field in fields.entries) {
       final text = field.value.text.trim();
+
       if (text.isEmpty &&
-          (field.key == 'Height (cm)' || field.key == 'Weight (kg)')) {
+          (field.key == 'Height (inches)' || field.key == 'Weight (lbs)')) {
         continue;
       }
 
       final number = double.tryParse(text);
-      final isGraceValue = field.key.endsWith('grace (g)');
+      final allowZero = field.key.endsWith('grace (g)') ||
+          field.key == 'Daily fat (g)' ||
+          field.key == 'Daily sugar (g)';
 
       if (number == null ||
           !number.isFinite ||
-          (isGraceValue ? number < 0 : number <= 0)) {
+          (allowZero ? number < 0 : number <= 0)) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
               '${field.key}: enter a number '
-              '${isGraceValue ? 'of zero or greater' : 'greater than zero'}.',
+              '${allowZero ? 'of zero or greater' : 'greater than zero'}.',
             ),
           ),
         );
@@ -70,27 +116,30 @@ class _GoalsScreenState extends State<GoalsScreen> {
       values[field.key] = number;
     }
 
-    setState(() {
-      saved = values;
-    });
+    setState(() => saving = true);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Profile and goals updated.')),
-    );
+    try {
+      await widget.save(todayId, values, goal);
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('$error')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => saving = false);
+    }
   }
 
   void changeGoal(String value) {
     setState(() {
       goal = value;
 
-      // Example targets for the interface, not personal health advice.
       final protein = goal == 'More protein' ? 150 : 100;
 
       fields['Daily calories']!.text = '2000';
       fields['Daily protein (g)']!.text = '$protein';
-      fields['Daily protein grace (g)']!.text = '0';
       fields['Daily carbs (g)']!.text = '250';
-      fields['Daily carbs grace (g)']!.text = '0';
       fields['Daily fat (g)']!.text = '70';
       fields['Daily fat grace (g)']!.text = '0';
       fields['Daily sugar (g)']!.text = '25';
@@ -103,6 +152,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
   Widget _buildFieldRow(String firstField, [String? secondField]) {
     Widget buildField(String label) => TextField(
       controller: fields[label],
+      enabled: today == null && !saving,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       decoration: InputDecoration(
         labelText: label,
@@ -129,13 +179,20 @@ class _GoalsScreenState extends State<GoalsScreen> {
   Widget _buildMacroGoalBar({
     required String label,
     required String targetKey,
-    required String graceKey,
+    String? graceKey,
     required Color color,
   }) {
-    final target = saved[targetKey]!;
-    final grace = saved[graceKey]!;
-    final allowedTotal = target + grace;
-    final targetFraction = target / allowedTotal;
+    final name = label.toLowerCase();
+    final log = today;
+    final eaten = log?.eaten(name) ?? 0.0;
+    final target = log?.goals[targetKey] ?? 0.0;
+    final restricted = graceKey != null;
+    final grace = restricted ? log?.goals[graceKey] ?? 0.0 : 0.0;
+
+    // A serving with 25 g toward a 100 g goal fills one quarter of the bar.
+    final progress = target > 0
+        ? (eaten / target).clamp(0.0, 1.0).toDouble()
+        : 0.0;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -145,11 +202,16 @@ class _GoalsScreenState extends State<GoalsScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
               Text(
-                'Goal ${target.toStringAsFixed(0)} g'
-                '  ·  Grace +${grace.toStringAsFixed(0)} g',
+                label,
+                style: const TextStyle(fontWeight: FontWeight.w600),
               ),
+              if (log != null)
+                Text(
+                  '${eaten.toStringAsFixed(1)} / '
+                  '${target.toStringAsFixed(1)} g'
+                  '${restricted ? ' limit' : ''}',
+                ),
             ],
           ),
           const SizedBox(height: 6),
@@ -160,21 +222,24 @@ class _GoalsScreenState extends State<GoalsScreen> {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  ColoredBox(color: color.withOpacity(0.22)),
+                  const ColoredBox(color: Colors.white),
                   FractionallySizedBox(
                     alignment: Alignment.centerLeft,
-                    widthFactor: targetFraction,
+                    widthFactor: progress,
                     child: ColoredBox(color: color),
                   ),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            'Allowed up to ${allowedTotal.toStringAsFixed(0)} g',
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
+          if (restricted && log != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              'Extra: ${log.extra(name).toStringAsFixed(1)} g'
+              ' / ${grace.toStringAsFixed(1)} g allowance',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
         ],
       ),
     );
@@ -185,15 +250,11 @@ class _GoalsScreenState extends State<GoalsScreen> {
     for (final controller in fields.values) {
       controller.dispose();
     }
-
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final caloriePercent = 500 / saved['Daily calories']! * 100;
-    final proteinPercent = 35 / saved['Daily protein (g)']! * 100;
-
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 247, 231, 206),
       appBar: AppBar(
@@ -202,9 +263,13 @@ class _GoalsScreenState extends State<GoalsScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          const Text(
-            'Demo: targets and food totals are examples. '
-            'Changes reset when you leave this screen.',
+          Text(
+            'Current streak: ${currentStreak(widget.days, widget.today)} days',
+          ),
+          Text(
+            today == null
+                ? 'Save your goals to start logging today.'
+                : 'Today’s goals are locked until tomorrow.',
           ),
           const SizedBox(height: 20),
 
@@ -227,11 +292,11 @@ class _GoalsScreenState extends State<GoalsScreen> {
                 child: Text('More protein'),
               ),
             ],
-            onChanged: (value) {
-              if (value != null) {
-                changeGoal(value);
-              }
-            },
+            onChanged: today != null || saving
+                ? null
+                : (value) {
+                    if (value != null) changeGoal(value);
+                  },
           ),
 
           const SizedBox(height: 8),
@@ -241,76 +306,34 @@ class _GoalsScreenState extends State<GoalsScreen> {
           ),
           const SizedBox(height: 20),
 
-          _buildFieldRow('Height (cm)', 'Weight (kg)'),
+          _buildFieldRow('Height (inches)', 'Weight (lbs)'),
           _buildFieldRow('Daily calories'),
-          _buildFieldRow('Daily protein (g)', 'Daily protein grace (g)'),
-          _buildFieldRow('Daily carbs (g)', 'Daily carbs grace (g)'),
+          _buildFieldRow('Daily protein (g)', 'Daily carbs (g)'),
           _buildFieldRow('Daily fat (g)', 'Daily fat grace (g)'),
           _buildFieldRow('Daily sugar (g)', 'Daily sugar grace (g)'),
           _buildFieldRow('Weekly calories', 'Weekly protein (g)'),
 
-          ElevatedButton(
-            onPressed: saveGoals,
-            child: const Text('Save Profile and Goals'),
-          ),
+          if (today == null)
+            ElevatedButton(
+              onPressed: saving ? null : saveGoals,
+              child: const Text('Save Profile and Goals'),
+            ),
 
           const SizedBox(height: 24),
           Text(
-            'Progress — sample food totals',
+            'Today’s recipe nutrition',
             style: Theme.of(context).textTheme.titleMedium,
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Today: 1,200 / '
-            '${saved['Daily calories']!.toStringAsFixed(0)} calories',
-          ),
-          Text(
-            'Today: 60 / '
-            '${saved['Daily protein (g)']!.toStringAsFixed(0)} g protein',
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'This week: 6,500 / '
-            '${saved['Weekly calories']!.toStringAsFixed(0)} calories',
-          ),
-          Text(
-            'This week: 320 / '
-            '${saved['Weekly protein (g)']!.toStringAsFixed(0)} g protein',
-          ),
-
-          const SizedBox(height: 24),
-          Text(
-            'Recipe contribution',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 8),
-          const Text('Chicken and rice — sample serving'),
-          Text(
-            '500 calories = ${caloriePercent.toStringAsFixed(0)}% '
-            'of your daily calorie target',
-          ),
-          Text(
-            '35 g protein = ${proteinPercent.toStringAsFixed(0)}% '
-            'of your daily protein target',
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'Daily macro goals',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 8),
-          const Text('Solid color = goal; lighter color = grace allowance.'),
           const SizedBox(height: 12),
+
           _buildMacroGoalBar(
             label: 'Protein',
             targetKey: 'Daily protein (g)',
-            graceKey: 'Daily protein grace (g)',
             color: Colors.blue,
           ),
           _buildMacroGoalBar(
             label: 'Carbs',
             targetKey: 'Daily carbs (g)',
-            graceKey: 'Daily carbs grace (g)',
             color: Colors.deepOrange,
           ),
           _buildMacroGoalBar(

@@ -3,6 +3,8 @@ import 'package:carb_cruncher/models/nutrition_model.dart';
 import 'package:flutter/material.dart';
 
 import '../models/recipe_model.dart';
+import '../nutrition/nutrition_day.dart';
+import '../nutrition/nutrition_store.dart';
 
 // THIS IS NOT FINAL.
 // This is a just a basic scaffold of the recipe page, and it can be changed later.
@@ -18,6 +20,66 @@ class RecipePage extends StatefulWidget {
 
 class _RecipePageState extends State<RecipePage> {
   final Set<int> _checked = {};
+  bool _logging = false;
+
+  Future<void> _logServing() async {
+    final recipe = widget.recipe;
+    final nutrition = recipe.nutrition;
+
+    if (nutrition == null || _logging) return;
+
+    setState(() => _logging = true);
+    final date = dayId(DateTime.now());
+
+    try {
+      final store = NutritionStore();
+
+      try {
+        await store.logServing(date, nutrition);
+      } on ExtraServing catch (extra) {
+        if (!mounted) return;
+
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: const Text('Log this serving?'),
+            content: Text(
+              '${extra.details}\n\n'
+              'The extra grams will show below your goal bar.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(dialogContext, true),
+                child: const Text('Log serving'),
+              ),
+            ],
+          ),
+        );
+
+        if (confirmed != true || !mounted) return;
+
+        await store.logServing(date, nutrition, allowExtra: true);
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Logged one serving of ${recipe.title}.')),
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not log this serving. $error')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _logging = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -113,6 +175,12 @@ class _RecipePageState extends State<RecipePage> {
                     _SectionTitle('Nutrition per serving'),
                     const SizedBox(height: 8),
                     _NutritionRow(nutrition: recipe.nutrition!),
+                    const SizedBox(height: 12),
+                    FilledButton.icon(
+                      onPressed: _logging ? null : _logServing,
+                      icon: const Icon(Icons.add),
+                      label: Text(_logging ? 'Logging…' : 'Log one serving'),
+                    ),
                   ],
 
                   // Ingredients
@@ -194,6 +262,7 @@ class _RecipePageState extends State<RecipePage> {
 
 class _SectionTitle extends StatelessWidget {
   final String text;
+
   const _SectionTitle(this.text);
 
   @override
@@ -204,6 +273,7 @@ class _SectionTitle extends StatelessWidget {
 class _InfoChip extends StatelessWidget {
   final IconData icon;
   final String label;
+
   const _InfoChip({required this.icon, required this.label});
 
   @override
@@ -216,6 +286,7 @@ class _InfoChip extends StatelessWidget {
 
 class _NutritionRow extends StatelessWidget {
   final Nutrition nutrition;
+
   const _NutritionRow({required this.nutrition});
 
   @override
@@ -258,11 +329,17 @@ class _StepTile extends StatelessWidget {
   final int number;
   final String text;
   final int? timerSec;
-  const _StepTile({required this.number, required this.text, this.timerSec});
+
+  const _StepTile({
+    required this.number,
+    required this.text,
+    this.timerSec,
+  });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(

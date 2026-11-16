@@ -504,6 +504,26 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                 if (saveStarted || recipeTitle.isEmpty) return;
                 saveStarted = true;
 
+                final ingredientTexts = ingredientControllers
+                  .map((controller) => controller.text.trim())
+                  .where((text) => text.isNotEmpty)
+                  .toList();
+
+                final stepTexts = stepControllers
+                  .map((controller) => controller.text.trim())
+                  .where((text) => text.isNotEmpty)
+                  .toList();
+
+                ingredients = ingredientTexts.asMap().entries.map((entry) {
+                  return IngredientModel(
+                    id: 'ingredient_${entry.key}',
+                    raw: entry.value,
+                    name: entry.value,
+                  );
+                }).toList();
+
+                steps = stepTexts.map((text) => StepModel(text: text)).toList();
+
                 final newRecipe = Recipe(
                   title: recipeTitle,
                   userId: _auth.currentUser?.uid,

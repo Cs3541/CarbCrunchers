@@ -1,4 +1,5 @@
 import 'package:carb_cruncher/Models/filter_model.dart';
+import 'package:carb_cruncher/models/category_model.dart';
 import 'package:flutter/material.dart';
 import '../../models/recipe_model.dart';
 import '../../presenters/recipe_presenter.dart';
@@ -541,12 +542,18 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
   bool isFilterActive = false;
   String? filterType = 'none';
   String? recipeType = 'none';
-  Filter filterController = new Filter();
+  Filter_Model filterController = Filter_Model();
   ScrollController _scrollController = ScrollController();
+  String _searchQuery = '';
 
   //Main Screen, displays recipes and can click on recipes
   @override
   Widget build(BuildContext context) {
+    final recipesToDisplay = _searchModel.searchRecipes(
+      isFilterActive ? _filteredMyRecipes : _myRecipes,
+      _searchQuery,
+    );
+
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 247, 231, 206),
       appBar:   AppBar(
@@ -563,16 +570,9 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : ListView.builder(
-              itemCount: isFilterActive
-                  ? _filteredMyRecipes.length
-                  : _myRecipes.length,
+              itemCount: recipesToDisplay.length,
               itemBuilder: (context, index) {
-                Recipe recipe;
-                if (isFilterActive) {
-                  recipe = _filteredMyRecipes[index];
-                } else {
-                  recipe = _myRecipes[index];
-                }
+                final recipe = recipesToDisplay[index];
                 return Column(
                   children: [
                   Padding(
@@ -761,7 +761,10 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                                 onTap: () {
                                   controller.openView();
                                 },
-                                onChanged: (_) {
+                                onChanged: (value) {
+                                  setState(() {
+                                    _searchQuery = value;
+                                  });
                                   controller.openView();
                                 },
                                 leading: const Icon(Icons.search),
@@ -780,13 +783,13 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                                     title: Text(recipe.title),
                                     onTap: () {
                                       setState(() {
-                                        controller.closeView(recipe.title);
+                                        _searchQuery = recipe.title;
                                       });
+                                      controller.closeView(recipe.title);
                                     },
                                   );
                                 }).toList();
                               }
-
                               return <Widget>[
                                 ListTile(
                                   title: Text(
@@ -833,7 +836,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                                 }
                               });
                             },
-                            initialSelection: 'none',
+                            initialSelection: recipeType,
                             label: Text('Nutrition Filter',
                               textAlign: TextAlign.center,
                               style: TextStyle(
@@ -950,7 +953,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                                 }
                               });
                             },
-                            initialSelection: 'none',
+                            initialSelection: filterType,
                             label: Text('Recipe Title Filter',
                               textAlign: TextAlign.center,
                               style: TextStyle(

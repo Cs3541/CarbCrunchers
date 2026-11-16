@@ -97,7 +97,7 @@ class Recipe {
   }
 
   static Future<List<Recipe>> fetchUserRecipes() async {
-    final userId = _auth.currentUser?.uid;
+    final userId = _auth.currentUser?.email;
     if (userId == null) return [];
 
     final snapshot = await _firestore

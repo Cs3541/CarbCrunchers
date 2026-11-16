@@ -1,6 +1,6 @@
 import '../../models/recipe_model.dart';
 
-class Filter{
+class Filter_Model{
 
 void swapRecipes(List<Recipe> recipeList, int firstIndex, int secondIndex) {
     if (firstIndex == secondIndex) return;
@@ -44,11 +44,6 @@ void swapRecipes(List<Recipe> recipeList, int firstIndex, int secondIndex) {
         else if (filter == "descending" && currentValue < nextValue) {swapRecipes(myRecipeList, j, j + 1);}
       }
     }
-    
     return myRecipeList;
   }
-
-
-
-
 }

@@ -1,6 +1,5 @@
 import 'package:carb_cruncher/Models/filter_model.dart';
 import 'package:flutter/material.dart';
-
 import '../../models/recipe_model.dart';
 import '../../presenters/recipe_presenter.dart';
 import '../../models/step_model.dart';
@@ -8,6 +7,11 @@ import '../../models/ingredient_model.dart';
 import '../../models/nutrition_model.dart';
 import '../views/recipe_page.dart';
 import '../../Models/filter_model.dart';
+import '../Models/search.model.dart';
+import '../Models/auth_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 class MyRecipeScreen extends StatefulWidget {
   const MyRecipeScreen({super.key});
@@ -18,6 +22,7 @@ class MyRecipeScreen extends StatefulWidget {
 
 class _MyRecipeScreenState extends State<MyRecipeScreen> {
   final RecipePresenter _recipePresenter = RecipePresenter();
+  final SearchModel _searchModel = SearchModel();
   final GlobalKey _tileKey = GlobalKey();
   List<Recipe> _myRecipes = [];
   List<Recipe> _filteredMyRecipes = [];
@@ -25,10 +30,11 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
   bool _isLoading = true;
 
 
-  //Controllers to allow for variable number of ingredients/steps/nutrition information to be added to the recipe
+  static final _auth = FirebaseAuth.instance;
+  static final _firestore = FirebaseFirestore.instance;
   final ingredientControllers = <TextEditingController>[];
   final stepControllers = <TextEditingController>[];
-  final nutritionControllers = <TextEditingController>[]; //Has a set number of fields and labels but can always add more
+  final nutritionControllers = <TextEditingController>[];
   final List<String> nutritionLabels = [
     'Calories',
     'Carbs',
@@ -315,6 +321,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
     Nutrition? nutrition;
     int? cooktime;
     int? servings;
+    var saveStarted = false;
 
     nutritionControllers.clear();
     ingredientControllers.clear();
@@ -493,23 +500,34 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
             ),
             ElevatedButton(
               onPressed: () async {
-                if (recipeTitle.isNotEmpty) {
-                  final newRecipe = Recipe(
-                    title: recipeTitle,
-                    description: description,
-                    ingredients: ingredients,
-                    steps: steps,
-                    imageURL: imageURL,
-                    keywords: keywords,
-                    nutrition: nutrition,
-                    cooktime: cooktime,
-                    servings: servings,
-                  );
-                  Navigator.of(context).pop();
-                  setState(() {
-                    _myRecipes.add(newRecipe);
-                  });
+                if (saveStarted || recipeTitle.isEmpty) return;
+                saveStarted = true;
+
+                final newRecipe = Recipe(
+                  title: recipeTitle,
+                  userId: _auth.currentUser?.uid,
+                  userRecipeIdentifier: _auth.currentUser?.email,
+                  description: description,
+                  ingredients: ingredients,
+                  steps: steps,
+                  imageURL: imageURL,
+                  keywords: keywords,
+                  nutrition: nutrition,
+                  cooktime: cooktime,
+                  servings: servings,
+                );
+
+                try {
                   await _recipePresenter.addUserRecipe(newRecipe);
+                  if (!mounted) return;
+                  setState(() {});
+                  Navigator.of(context).pop();
+                } catch (error) {
+                  saveStarted = false;
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Could not save recipe: $error')),
+                  );
                 }
               },
               child: const Text('Save'),
@@ -621,7 +639,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                         tooltip: 'Edit Recipe',
                         backgroundColor: const Color(0xFFB45309),
                         mini: true,
-                        heroTag: 'editRecipe-${recipe.id ?? index}',
+                        heroTag: 'editRecipe-${recipe.userId ?? index}',
                         onPressed: () {
                           _showEditRecipeDialog(recipe);
                         },
@@ -750,31 +768,41 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                               );
                             },
                             suggestionsBuilder:
-                              (BuildContext context, SearchController controller) {
-                                if (_myRecipes.isNotEmpty) {
-                                  return List<ListTile>.generate(_myRecipes.length, (int index) {
-                                    final Recipe recipe = _myRecipes[index];
-                                    return ListTile(
-                                      title: Text(recipe.title),
-                                      onTap: () {
-                                        setState(() {
-                                          controller.closeView(recipe.title);
-                                        });
+                                (BuildContext context,
+                                    SearchController controller) {
+                              final matchingRecipes = _searchModel.searchRecipes(
+                                _myRecipes,
+                                controller.text,
+                              );
+                              if (matchingRecipes.isNotEmpty) {
+                                return matchingRecipes.map((Recipe recipe) {
+                                  return ListTile(
+                                    title: Text(recipe.title),
+                                    onTap: () {
+                                      setState(() {
+                                        controller.closeView(recipe.title);
                                       });
                                     },
                                   );
-                                } else {
-                                  return const <Widget>[
-                                    ListTile(title: Text('No Recipes Available')),
-                                  ];
-                                }
-                              },
+                                }).toList();
+                              }
+
+                              return <Widget>[
+                                ListTile(
+                                  title: Text(
+                                    _myRecipes.isEmpty
+                                        ? 'No Recipes Available'
+                                        : 'No matching recipes available',
+                                  ),
+                                ),
+                              ];
+                            },
                           ),
                       ),
 
                       Column(
                         children: [
-                          SizedBox(height: 12),
+                          SizedBox(height: 50),
                           DropdownMenu<String>(
                             inputDecorationTheme: InputDecorationTheme(
                               filled: true,
@@ -789,9 +817,20 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                             ),
                             onSelected: (String? value) {
                               setState(() {
-                                recipeType = value;
+                                recipeType = value; // In the nutrition dropdown callback
+                                isFilterActive =
+                                    recipeType != null &&
+                                    recipeType != 'none' &&
+                                    filterType != null &&
+                                    filterType != 'none';
                                 _filteredMyRecipes = List<Recipe>.from(_myRecipes);
-                                filterController.filterRecipe(_filteredMyRecipes, recipeType, filterType, isFilterActive);
+                                if (isFilterActive) {
+                                  filterController.filterRecipe(
+                                    _filteredMyRecipes,
+                                    recipeType,
+                                    filterType,
+                                  );
+                                }
                               });
                             },
                             initialSelection: 'none',
@@ -810,68 +849,77 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                                 value: 'none',
                                 label: 'None',
                                 style: MenuItemButton.styleFrom(
-                                foregroundColor: Color.fromARGB(255, 216, 190, 129),
+                                foregroundColor: Color(0xFFB45309),
+                                backgroundColor: const Color.fromARGB(255, 247, 231, 206),
                                 ),
                               ),
                               DropdownMenuEntry<String>(
                                 value: 'calories',
                                 label: 'Calories',
                                 style: MenuItemButton.styleFrom(
-                                foregroundColor: Color.fromARGB(255, 216, 190, 129),
+                                foregroundColor: Color(0xFFB45309),
+                                backgroundColor: const Color.fromARGB(255, 247, 231, 206),
                                 ),
                               ),
                               DropdownMenuEntry<String>(
                                 value: 'fat',
                                 label: 'Fat',
                                 style: MenuItemButton.styleFrom(
-                                foregroundColor: Color.fromARGB(255, 216, 190, 129),
+                                foregroundColor: Color(0xFFB45309),
+                                backgroundColor: const Color.fromARGB(255, 247, 231, 206),
                                 ),
                               ),
                               DropdownMenuEntry<String>(
                                 value: 'carbs',
-                                label: 'carbs',
+                                label: 'Carbs',
                                 style: MenuItemButton.styleFrom(
-                                foregroundColor: Color.fromARGB(255, 216, 190, 129),
+                                foregroundColor: Color(0xFFB45309),
+                                backgroundColor: const Color.fromARGB(255, 247, 231, 206),
                                 ),
                               ),
                               DropdownMenuEntry<String>(
                                 value: 'servings',
                                 label: 'Servings',
                                 style: MenuItemButton.styleFrom(
-                                foregroundColor: Color.fromARGB(255, 216, 190, 129),
+                                foregroundColor: Color(0xFFB45309),
+                                backgroundColor: const Color.fromARGB(255, 247, 231, 206),
                                 ),
                               ),
                               DropdownMenuEntry<String>(
                                 value: 'fiber',
                                 label: 'Fiber',
                                 style: MenuItemButton.styleFrom(
-                                foregroundColor: Color.fromARGB(255, 216, 190, 129),
+                                foregroundColor: Color(0xFFB45309),
+                                backgroundColor: const Color.fromARGB(255, 247, 231, 206),
                                 ),
                               ),
                               DropdownMenuEntry<String>(
                                 value: 'protein',
                                 label: 'Protein',
                                 style: MenuItemButton.styleFrom(
-                                foregroundColor: Color.fromARGB(255, 216, 190, 129),
+                                foregroundColor: Color(0xFFB45309),
+                                backgroundColor: const Color.fromARGB(255, 247, 231, 206),
                                 ),
                               ),
                               DropdownMenuEntry<String>(
                                 value: 'sodium',
                                 label: 'Sodium',
                                 style: MenuItemButton.styleFrom(
-                                foregroundColor: Color.fromARGB(255, 216, 190, 129),
+                                foregroundColor: Color(0xFFB45309),
+                                backgroundColor: const Color.fromARGB(255, 247, 231, 206),
                                 ),
                               ),
                               DropdownMenuEntry<String>(
                                 value: 'sugar',
                                 label: 'Sugar',
                                 style: MenuItemButton.styleFrom(
-                                foregroundColor: Color.fromARGB(255, 216, 190, 129),
+                                foregroundColor: Color(0xFFB45309),
+                                backgroundColor: const Color.fromARGB(255, 247, 231, 206),
                                 ),
                               ),
                             ],
                           ),
-                          SizedBox(height: 12),
+                          SizedBox(height: 24),
                           DropdownMenu<String>(
                             inputDecorationTheme: InputDecorationTheme(
                               filled: true,
@@ -886,9 +934,20 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                             ),
                             onSelected: (String? value) {
                               setState(() {
-                                filterType = value;
+                                filterType = value; // In the nutrition dropdown callback
+                                isFilterActive =
+                                    recipeType != null &&
+                                    recipeType != 'none' &&
+                                    filterType != null &&
+                                    filterType != 'none';
                                 _filteredMyRecipes = List<Recipe>.from(_myRecipes);
-                                filterController.filterRecipe(_filteredMyRecipes, recipeType, filterType, isFilterActive);
+                                if (isFilterActive) {
+                                  filterController.filterRecipe(
+                                    _filteredMyRecipes,
+                                    recipeType,
+                                    filterType,
+                                  );
+                                }
                               });
                             },
                             initialSelection: 'none',
@@ -907,26 +966,29 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                                 value: 'none',
                                 label: 'None',
                                 style: MenuItemButton.styleFrom(
-                                foregroundColor: Color.fromARGB(255, 216, 190, 129),
+                                foregroundColor: Color(0xFFB45309),
+                                backgroundColor: const Color.fromARGB(255, 247, 231, 206),
                                 ),
                               ),
                               DropdownMenuEntry<String>(
                                 value: 'ascending',
                                 label: 'Ascending',
                                 style: MenuItemButton.styleFrom(
-                                foregroundColor: Color.fromARGB(255, 216, 190, 129),
+                                foregroundColor: Color(0xFFB45309),
+                                backgroundColor: const Color.fromARGB(255, 247, 231, 206),
                                 ),
                               ),
                               DropdownMenuEntry<String>(
                                 value: 'descending',
                                 label: 'Descending',
                                 style: MenuItemButton.styleFrom(
-                                foregroundColor: Color.fromARGB(255, 216, 190, 129),
+                                foregroundColor: Color(0xFFB45309),
+                                backgroundColor: const Color.fromARGB(255, 247, 231, 206),
                                 ),
                               ),
                             ],
                           ),
-                          SizedBox(height: 12),
+                          SizedBox(height: 24),
                         ],
                       ),
           ],

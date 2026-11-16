@@ -53,13 +53,24 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
   }
 
   //Loads User Data
-  Future<void> _fetchMyRecipes() async {
+  String? _loadError;
+
+Future<void> _fetchMyRecipes() async {
+  try {
     await _recipePresenter.loadRecipes();
+    if (!mounted) return;
     setState(() {
       _myRecipes = _recipePresenter.recipes;
-      _isLoading = false;
+      _loadError = null;
     });
+  } catch (error) {
+    if (!mounted) return;
+    setState(() => _loadError = 'Could not load recipes: $error');
+    Navigator.pop(context);
+  } finally {
+    if (mounted) setState(() => _isLoading = false);
   }
+}
 
   //Dialog to edit a recipe
   void _showEditRecipeDialog(Recipe recipe) {
@@ -523,7 +534,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                 }).toList();
 
                 steps = stepTexts.map((text) => StepModel(text: text)).toList();
-
+                
                 final newRecipe = Recipe(
                   title: recipeTitle,
                   userId: _auth.currentUser?.uid,

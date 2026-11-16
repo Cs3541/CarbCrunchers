@@ -2,6 +2,7 @@ import 'package:carb_cruncher/interactive_recipe_screen.dart';
 import 'package:carb_cruncher/models/nutrition_model.dart';
 import 'package:flutter/material.dart';
 
+import '../Presenters/recipe_presenter.dart';
 import '../models/recipe_model.dart';
 import '../nutrition/nutrition_day.dart';
 import '../nutrition/nutrition_store.dart';
@@ -13,6 +14,7 @@ class RecipePage extends StatefulWidget {
   final Recipe recipe;
 
   const RecipePage({super.key, required this.recipe});
+  
 
   @override
   State<RecipePage> createState() => _RecipePageState();
@@ -21,6 +23,8 @@ class RecipePage extends StatefulWidget {
 class _RecipePageState extends State<RecipePage> {
   final Set<int> _checked = {};
   bool _logging = false;
+  bool canAddToUserRecipes = true;
+  final RecipePresenter _recipePresenter = RecipePresenter();
 
   Future<void> _logServing() async {
     final recipe = widget.recipe;
@@ -227,6 +231,20 @@ class _RecipePageState extends State<RecipePage> {
               ),
             ),
           ),
+        ],
+      ),
+      appBar: AppBar(
+        actions: [
+          if (canAddToUserRecipes)
+            TextButton.icon(
+              onPressed: () {
+                setState(() {
+                  _recipePresenter.addUserRecipe(recipe);
+                });
+              },
+              icon: const Icon(Icons.bookmark_add_outlined),
+              label: const Text('Save'),
+            ),
         ],
       ),
       floatingActionButton: steps.isEmpty

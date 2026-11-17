@@ -160,16 +160,14 @@ Future<void> _fetchMyRecipes() async {
                             TextField(
                               controller: ingredientControllers[i],
                               decoration: InputDecoration(
-                                labelText: 'Ingredient ${i + 1}: ',
-                                hintText: 'Ingredient Goes Here!',
+                                labelText: 'Ingredient ${i+1}: ',
+                                hintText: 'Ingredient Goes Here!'
                               ),
                             ),
                           TextButton.icon(
                             onPressed: () {
                               setDialogState(() {
-                                ingredientControllers.add(
-                                  TextEditingController(),
-                                );
+                                ingredientControllers.add(TextEditingController());
                               });
                             },
                             icon: const Icon(Icons.add),
@@ -191,7 +189,7 @@ Future<void> _fetchMyRecipes() async {
                             TextField(
                               controller: stepControllers[i],
                               decoration: InputDecoration(
-                                labelText: 'Recipe Step ${i + 1}: ',
+                                labelText: 'Recipe Step ${i+1}: ',
                                 hintText: 'Input a Recipe Step!',
                               ),
                             ),
@@ -210,16 +208,13 @@ Future<void> _fetchMyRecipes() async {
                   },
                 ),
 
+                //Nutrition Information
                 StatefulBuilder(
                   builder: (context, setDialogState) {
                     return SingleChildScrollView(
                       child: Column(
                         children: [
-                          for (
-                            var i = 0;
-                            i < nutritionControllers.length && i < 7;
-                            i++
-                          )
+                          for (var i = 0; i < nutritionControllers.length && i < 7; i++)
                             TextField(
                               controller: nutritionControllers[i],
                               decoration: InputDecoration(
@@ -230,9 +225,7 @@ Future<void> _fetchMyRecipes() async {
                           TextButton.icon(
                             onPressed: () {
                               setDialogState(() {
-                                nutritionControllers.add(
-                                  TextEditingController(),
-                                );
+                                nutritionControllers.add(TextEditingController());
                               });
                             },
                             icon: const Icon(Icons.add),
@@ -243,6 +236,7 @@ Future<void> _fetchMyRecipes() async {
                     );
                   },
                 ),
+                
               ],
             ),
           ),
@@ -296,15 +290,15 @@ Future<void> _fetchMyRecipes() async {
     final selectedRecipes = _selectedRecipes.toList();
 
     for (final recipe in selectedRecipes) {
-      final originalIndex = _myRecipes.indexOf(recipe);
+        final originalIndex = _myRecipes.indexOf(recipe);
 
-      setState(() {
-        _myRecipes.remove(recipe);
-        _selectedRecipes.remove(recipe);
-      });
+         setState(() {
+          _myRecipes.remove(recipe);
+          _selectedRecipes.remove(recipe);
+        });
 
       try {
-        await _recipePresenter.deleteUserRecipe(recipe);
+      await _recipePresenter.deleteUserRecipe(recipe);
       } catch (error) {
         if (!mounted) return;
 
@@ -421,16 +415,14 @@ Future<void> _fetchMyRecipes() async {
                             TextField(
                               controller: ingredientControllers[i],
                               decoration: InputDecoration(
-                                labelText: 'Ingredient ${i + 1}: ',
-                                hintText: 'Ingredient Goes Here!',
+                                labelText: 'Ingredient ${i+1}: ',
+                                hintText: 'Ingredient Goes Here!'
                               ),
                             ),
                           TextButton.icon(
                             onPressed: () {
                               setDialogState(() {
-                                ingredientControllers.add(
-                                  TextEditingController(),
-                                );
+                                ingredientControllers.add(TextEditingController());
                               });
                             },
                             icon: const Icon(Icons.add),
@@ -452,7 +444,7 @@ Future<void> _fetchMyRecipes() async {
                             TextField(
                               controller: stepControllers[i],
                               decoration: InputDecoration(
-                                labelText: 'Recipe Step ${i + 1}: ',
+                                labelText: 'Recipe Step ${i+1}: ',
                                 hintText: 'Input a Recipe Step!',
                               ),
                             ),
@@ -471,16 +463,13 @@ Future<void> _fetchMyRecipes() async {
                   },
                 ),
 
+                //Nutrition Information
                 StatefulBuilder(
                   builder: (context, setDialogState) {
                     return SingleChildScrollView(
                       child: Column(
                         children: [
-                          for (
-                            var i = 0;
-                            i < nutritionControllers.length && i < 7;
-                            i++
-                          )
+                          for (var i = 0; i < nutritionControllers.length && i < 7; i++)
                             TextField(
                               controller: nutritionControllers[i],
                               decoration: InputDecoration(
@@ -491,9 +480,7 @@ Future<void> _fetchMyRecipes() async {
                           TextButton.icon(
                             onPressed: () {
                               setDialogState(() {
-                                nutritionControllers.add(
-                                  TextEditingController(),
-                                );
+                                nutritionControllers.add(TextEditingController());
                               });
                             },
                             icon: const Icon(Icons.add),
@@ -504,6 +491,7 @@ Future<void> _fetchMyRecipes() async {
                     );
                   },
                 ),
+
               ],
             ),
           ),
@@ -611,60 +599,19 @@ Future<void> _fetchMyRecipes() async {
                 final recipe = recipesToDisplay[index];
                 return Column(
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                      child: ListTile(
-                        minVerticalPadding: 30.0,
-                        minTileHeight: 30.0,
-                        tileColor: const Color.fromARGB(255, 247, 231, 206),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16.0,
-                          vertical: 10.0,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                          side: const BorderSide(
-                            color: Color(0xFFB45309),
-                            width: 2.0,
-                          ),
-                        ),
-                        leading: SizedBox(
-                          width: 200,
-                          child: Row(
-                            children: [
-                              Checkbox(
-                                value: _selectedRecipes.contains(recipe),
-                                activeColor: const Color(0xFFB45309),
-                                onChanged: (selected) {
-                                  setState(() {
-                                    if (selected == true) {
-                                      _selectedRecipes.add(recipe);
-                                    } else {
-                                      _selectedRecipes.remove(recipe);
-                                    }
-                                  });
-                                },
-                              ),
-                              ClipRRect(
-                                child: recipe.imageURL != null
-                                    ? Image.network(
-                                        recipe.imageURL!,
-                                        width: 60,
-                                        height: 60,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (_, _, _) =>
-                                            _imagePlaceholder(),
-                                      )
-                                    : _imagePlaceholder(),
-                              ),
-                              SizedBox(width: 12.0),
-                            ],
-                          ),
-                        ),
-                        title: Text(recipe.title),
-                        titleTextStyle: const TextStyle(
-                          fontSize: 16.0,
-                          fontWeight: FontWeight.bold,
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                    child: ListTile(
+                      minVerticalPadding: 30.0,
+                      minTileHeight: 30.0,
+                      tileColor: const Color.fromARGB(255, 247, 231, 206),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                        vertical: 10.0,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                        side: const BorderSide(
                           color: Color(0xFFB45309),
                           width: 4.0,
                         ),
@@ -720,6 +667,7 @@ Future<void> _fetchMyRecipes() async {
                         onPressed: () {
                           _showEditRecipeDialog(recipe);
                         },
+                        child: const Icon(Icons.edit, color: Colors.white),
                       ),
                       onTap: () {
                         Navigator.push(
@@ -733,6 +681,7 @@ Future<void> _fetchMyRecipes() async {
                         );
                       },
                     ),
+                  ),
                     const SizedBox(height: 10.0),
                   ],
                 );

@@ -19,6 +19,8 @@ class _ArticlesPageState extends State<ArticlesPage> implements FeedView {
   List<RssItem> _items = [];
   bool _isLoading = false;
   String? _errorMessage;
+  static const _backgroundColor = Color.fromARGB(255, 247, 231, 206);
+  static const _primaryColor = Color(0xFF1F5DA8);
 
   @override
   void initState() {
@@ -66,7 +68,11 @@ class _ArticlesPageState extends State<ArticlesPage> implements FeedView {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Articles')),
+      appBar: AppBar(
+        title: const Text('Articles'),
+        backgroundColor: _backgroundColor,
+      ),
+      backgroundColor: _backgroundColor,
       body: _buildBody(),
     );
   }

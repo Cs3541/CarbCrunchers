@@ -8,6 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 
 import '../Presenters/AuthPresenter.dart';
+import '../nutrition/day_history_view.dart';
+import '../nutrition/nutrition_day.dart';
 import '../widgets/profile_avatar.dart';
 import 'history_screen.dart';
 
@@ -206,10 +208,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     color: Colors.red.shade50,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    Icons.delete_outline,
-                    color: Colors.red.shade700,
-                  ),
+                  child: Icon(Icons.delete_outline, color: Colors.red.shade700),
                 ),
                 const SizedBox(width: 12),
                 const Expanded(
@@ -344,255 +343,292 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: _backgroundColor,
-      appBar: AppBar(
-        title: const Text('My Profile'),
-        backgroundColor: _backgroundColor,
-        actions: [
-          TextButton.icon(
-            onPressed: _signOut,
-            icon: const Icon(Icons.logout),
-            label: const Text('Sign out'),
+    return StreamBuilder<User?>(
+      stream: _authPresenter.userChanges(),
+      initialData: _authPresenter.currentUser,
+      builder: (context, snapshot) {
+        final user = snapshot.data;
+
+        return Scaffold(
+          backgroundColor: _backgroundColor,
+          appBar: AppBar(
+            title: const Text('My Profile'),
+            backgroundColor: _backgroundColor,
+            actions: [
+              TextButton.icon(
+                onPressed: _signOut,
+                icon: const Icon(Icons.logout),
+                label: const Text('Sign out'),
+              ),
+              const SizedBox(width: 8),
+            ],
           ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      floatingActionButton: IgnorePointer(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: _primaryColor.withValues(alpha: 0.2)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.12),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.local_fire_department, color: Color(0xFFE76F00)),
-                  SizedBox(width: 8),
-                  Text('Streak', style: TextStyle(fontWeight: FontWeight.w600)),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-          ],
-        ),
-      ),
-      body: StreamBuilder<User?>(
-        stream: _authPresenter.userChanges(),
-        initialData: _authPresenter.currentUser,
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return const Center(
-              child: Text('Could not load your profile. Please try again.'),
-            );
-          }
-
-          if (snapshot.connectionState == ConnectionState.waiting &&
-              !snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          final user = snapshot.data;
-
-          if (user == null) {
-            return const Center(
-              child: Text('Please sign in to view your profile.'),
-            );
-          }
-
-          return StreamBuilder<DatabaseEvent>(
-            stream: _database.ref('profileImages/${user.uid}').onValue,
-            builder: (context, imageSnapshot) {
-              if (imageSnapshot.hasError) {
+          floatingActionButton: user == null
+              ? null
+              : DayHistoryView(
+                  builder: (history, date) {
+                    final streak = currentStreak(history, date);
+                    return IgnorePointer(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Semantics(
+                            label:
+                                'Current streak: $streak '
+                                '${streak == 1 ? 'day' : 'days'}',
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 10,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(24),
+                                border: Border.all(
+                                  color: _primaryColor.withValues(alpha: 0.2),
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.12),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Text(
+                                    '🔥',
+                                    style: TextStyle(fontSize: 20),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    '$streak',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+          body: Builder(
+            builder: (context) {
+              if (snapshot.hasError) {
                 return const Center(
-                  child: Text('Could not load your profile picture.'),
+                  child: Text('Could not load your profile. Please try again.'),
                 );
               }
 
-              final profileData = imageSnapshot.data?.snapshot.value;
-              final hasProfileImage =
-                  profileData is Map && profileData['imageData'] is String;
+              if (snapshot.connectionState == ConnectionState.waiting &&
+                  !snapshot.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-              return Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(vertical: 24),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ProfileAvatar(profileData: profileData),
-                      const SizedBox(height: 20),
-                      OutlinedButton.icon(
-                        onPressed: _isUploading || _isRemovingImage
-                            ? null
-                            : () => _changeProfileImage(user),
-                        icon: const Icon(Icons.photo_camera_outlined),
-                        label: Text(
-                          _isUploading
-                              ? _isPreparingImage
-                                    ? 'Preparing picture...'
-                                    : 'Saving picture...'
-                              : 'Change profile picture',
-                        ),
-                      ),
-                      if (hasProfileImage) ...[
-                        const SizedBox(height: 4),
-                        TextButton.icon(
-                          onPressed: _isUploading || _isRemovingImage
-                              ? null
-                              : () => _removeProfileImage(user),
-                          icon: _isRemovingImage
-                              ? const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : const Icon(Icons.restore),
-                          label: Text(
-                            _isRemovingImage ? 'Removing...' : 'Remove photo',
-                          ),
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.red.shade700,
-                          ),
-                        ),
-                      ],
-                      if (_isUploading) ...[
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          width: 220,
-                          child: LinearProgressIndicator(
-                            value: _isPreparingImage ? null : _uploadProgress,
-                          ),
-                        ),
-                      ],
-                      const SizedBox(height: 28),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed: _isDeletingAccount
-                                    ? null
-                                    : () => _deleteAccount(user),
-                                icon: const Icon(Icons.delete_outline),
-                                label: const Text(
-                                  'Delete account',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red.shade700,
-                                  foregroundColor: Colors.white,
-                                  minimumSize: const Size.fromHeight(48),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                  ),
-                                ),
-                              ),
+              if (user == null) {
+                return const Center(
+                  child: Text('Please sign in to view your profile.'),
+                );
+              }
+
+              return StreamBuilder<DatabaseEvent>(
+                stream: _database.ref('profileImages/${user.uid}').onValue,
+                builder: (context, imageSnapshot) {
+                  if (imageSnapshot.hasError) {
+                    return const Center(
+                      child: Text('Could not load your profile picture.'),
+                    );
+                  }
+
+                  final profileData = imageSnapshot.data?.snapshot.value;
+                  final hasProfileImage =
+                      profileData is Map && profileData['imageData'] is String;
+
+                  return Center(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(vertical: 24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ProfileAvatar(profileData: profileData),
+                          const SizedBox(height: 20),
+                          OutlinedButton.icon(
+                            onPressed: _isUploading || _isRemovingImage
+                                ? null
+                                : () => _changeProfileImage(user),
+                            icon: const Icon(Icons.photo_camera_outlined),
+                            label: Text(
+                              _isUploading
+                                  ? _isPreparingImage
+                                        ? 'Preparing picture...'
+                                        : 'Saving picture...'
+                                  : 'Change profile picture',
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: PopupMenuButton<_ManageAccountAction>(
-                                enabled: !_isDeletingAccount,
-                                onSelected: (action) async {
-                                  await _selectManageAction(action, user);
-                                },
-                                itemBuilder: (context) => const [
-                                  PopupMenuItem(
-                                    value: _ManageAccountAction.username,
-                                    child: Text('Change username'),
-                                  ),
-                                  PopupMenuItem(
-                                    value: _ManageAccountAction.password,
-                                    child: Text('Change password'),
-                                  ),
-                                ],
-                                child: Container(
-                                  height: 48,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: _primaryColor,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: const Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.manage_accounts_outlined,
-                                        color: Colors.white,
+                          ),
+                          if (hasProfileImage) ...[
+                            const SizedBox(height: 4),
+                            TextButton.icon(
+                              onPressed: _isUploading || _isRemovingImage
+                                  ? null
+                                  : () => _removeProfileImage(user),
+                              icon: _isRemovingImage
+                                  ? const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
                                       ),
-                                      SizedBox(width: 6),
-                                      Flexible(
-                                        child: Text(
-                                          'Manage account',
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(color: Colors.white),
-                                        ),
-                                      ),
-                                      Icon(
-                                        Icons.arrow_drop_down,
-                                        color: Colors.white,
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                                    )
+                                  : const Icon(Icons.restore),
+                              label: Text(
+                                _isRemovingImage
+                                    ? 'Removing...'
+                                    : 'Remove photo',
+                              ),
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.red.shade700,
                               ),
                             ),
                           ],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton.icon(
-                            onPressed: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => const HistoryScreen(),
+                          if (_isUploading) ...[
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              width: 220,
+                              child: LinearProgressIndicator(
+                                value: _isPreparingImage
+                                    ? null
+                                    : _uploadProgress,
+                              ),
+                            ),
+                          ],
+                          const SizedBox(height: 28),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: ElevatedButton.icon(
+                                    onPressed: _isDeletingAccount
+                                        ? null
+                                        : () => _deleteAccount(user),
+                                    icon: const Icon(Icons.delete_outline),
+                                    label: const Text(
+                                      'Delete account',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red.shade700,
+                                      foregroundColor: Colors.white,
+                                      minimumSize: const Size.fromHeight(48),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              );
-                            },
-                            icon: const Icon(Icons.history),
-                            label: const Text('History'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: _primaryColor,
-                              minimumSize: const Size.fromHeight(48),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: PopupMenuButton<_ManageAccountAction>(
+                                    enabled: !_isDeletingAccount,
+                                    onSelected: (action) async {
+                                      await _selectManageAction(action, user);
+                                    },
+                                    itemBuilder: (context) => const [
+                                      PopupMenuItem(
+                                        value: _ManageAccountAction.username,
+                                        child: Text('Change username'),
+                                      ),
+                                      PopupMenuItem(
+                                        value: _ManageAccountAction.password,
+                                        child: Text('Change password'),
+                                      ),
+                                    ],
+                                    child: Container(
+                                      height: 48,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: _primaryColor,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: const Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.manage_accounts_outlined,
+                                            color: Colors.white,
+                                          ),
+                                          SizedBox(width: 6),
+                                          Flexible(
+                                            child: Text(
+                                              'Manage account',
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ),
+                                          Icon(
+                                            Icons.arrow_drop_down,
+                                            color: Colors.white,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ),
+                          const SizedBox(height: 12),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton.icon(
+                                onPressed: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const HistoryScreen(),
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(Icons.history),
+                                label: const Text('History'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: _primaryColor,
+                                  minimumSize: const Size.fromHeight(48),
+                                ),
+                              ),
+                            ),
+                          ),
+                          if (_isDeletingAccount) ...[
+                            const SizedBox(height: 12),
+                            const CircularProgressIndicator(),
+                          ],
+                        ],
                       ),
-                      if (_isDeletingAccount) ...[
-                        const SizedBox(height: 12),
-                        const CircularProgressIndicator(),
-                      ],
-                    ],
-                  ),
-                ),
+                    ),
+                  );
+                },
               );
             },
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }

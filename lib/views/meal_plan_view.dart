@@ -46,7 +46,7 @@ class _MyMealsScreenState extends State<MyMealsScreen> {
       'Wednesday',
       'Thursday',
       'Friday',
-      'Saturday'
+      'Saturday',
     ];
 
     for (var meal in meals) {
@@ -58,8 +58,9 @@ class _MyMealsScreenState extends State<MyMealsScreen> {
 
   // Fetch available recipes from Firestore for the dropdown
   Future<List> _fetchAvailableRecipes() async {
-    final snapshot =
-        await FirebaseFirestore.instance.collection('recipes').get();
+    final snapshot = await FirebaseFirestore.instance
+        .collection('recipes')
+        .get();
     return snapshot.docs.map((doc) {
       final data = doc.data();
       return {
@@ -114,8 +115,10 @@ class _MyMealsScreenState extends State<MyMealsScreen> {
                     value: selectedMealType,
                     decoration: const InputDecoration(labelText: 'Meal Slot'),
                     items: ['Breakfast', 'Lunch', 'Dinner', 'Snack']
-                        .map((type) =>
-                            DropdownMenuItem(value: type, child: Text(type)))
+                        .map(
+                          (type) =>
+                              DropdownMenuItem(value: type, child: Text(type)),
+                        )
                         .toList(),
                     onChanged: (val) =>
                         setModalState(() => selectedMealType = val!),
@@ -127,7 +130,8 @@ class _MyMealsScreenState extends State<MyMealsScreen> {
                     contentPadding: EdgeInsets.zero,
                     title: const Text('Date'),
                     subtitle: Text(
-                        '${selectedDate.month}/${selectedDate.day}/${selectedDate.year}'),
+                      '${selectedDate.month}/${selectedDate.day}/${selectedDate.year}',
+                    ),
                     trailing: const Icon(Icons.calendar_today),
                     onTap: () async {
                       final picked = await showDatePicker(
@@ -145,23 +149,25 @@ class _MyMealsScreenState extends State<MyMealsScreen> {
 
                   // 3. Recipe Dropdown (Pulls real recipes from database)
                   DropdownButtonFormField<String>(
-                    value: availableRecipes
-                            .any((r) => r['id'] == selectedRecipeId)
+                    value:
+                        availableRecipes.any((r) => r['id'] == selectedRecipeId)
                         ? selectedRecipeId
                         : null,
-                    decoration:
-                        const InputDecoration(labelText: 'Select Recipe'),
+                    decoration: const InputDecoration(
+                      labelText: 'Select Recipe',
+                    ),
                     hint: const Text('Choose a recipe'),
                     items: availableRecipes
-                      .map<DropdownMenuItem<String>>(
-                        (rec) => DropdownMenuItem<String>(
-                          value: rec['id'],
-                          child: Text(
-                            rec['title']!,
-                            overflow: TextOverflow.ellipsis,
+                        .map<DropdownMenuItem<String>>(
+                          (rec) => DropdownMenuItem<String>(
+                            value: rec['id'],
+                            child: Text(
+                              rec['title']!,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                      ),)
-                      .toList(),
+                          ),
+                        )
+                        .toList(),
                     isExpanded: true,
                     onChanged: (val) =>
                         setModalState(() => selectedRecipeId = val),
@@ -252,11 +258,19 @@ class _MyMealsScreenState extends State<MyMealsScreen> {
             ),
             const Spacer(),
             IconButton(
-              icon: const Icon(Icons.arrow_back_ios, size: 18, color: Colors.white),
+              icon: const Icon(
+                Icons.arrow_back_ios,
+                size: 18,
+                color: Colors.white,
+              ),
               onPressed: () => setState(() => _presenter.changeWeek(-1)),
             ),
             IconButton(
-              icon: const Icon(Icons.arrow_forward_ios, size: 18, color: Colors.white),
+              icon: const Icon(
+                Icons.arrow_forward_ios,
+                size: 18,
+                color: Colors.white,
+              ),
               onPressed: () => setState(() => _presenter.changeWeek(1)),
             ),
           ],
@@ -328,9 +342,7 @@ class _MyMealsScreenState extends State<MyMealsScreen> {
         if (recipe != null) {
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (context) => RecipePage(recipe: recipe),
-            ),
+            MaterialPageRoute(builder: (context) => RecipePage(recipe: recipe)),
           );
         }
       },

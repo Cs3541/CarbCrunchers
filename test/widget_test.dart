@@ -5,13 +5,16 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:carb_cruncher/views/auth_gate.dart';
 import 'package:carb_cruncher/views/goals_screen.dart';
-import 'package:carb_cruncher/views/history_screen.dart';
+import 'package:carb_cruncher/Views/history_screen.dart';
 import 'package:carb_cruncher/models/goals_repository.dart';
+import 'package:carb_cruncher/nutrition/nutrition_day.dart';
 
 class FakeGoalsRepository implements GoalsRepository {
   Map<String, dynamic> data = {};
@@ -133,7 +136,8 @@ void main() {
     await tester.tap(find.text('Set as Default'));
     await tester.pumpAndSettle();
 
-    final defaultGoals = repository.data['defaultGoals'] as Map<String, dynamic>;
+    final defaultGoals =
+        repository.data['defaultGoals'] as Map<String, dynamic>;
     expect(
       (defaultGoals['values'] as Map<String, dynamic>)['Daily protein (g)'],
       140,
@@ -157,10 +161,7 @@ void main() {
   ) async {
     await tester.pumpWidget(
       MaterialApp(
-        home: AuthGate(
-          authStateChanges: Stream.value(null),
-          initialUser: null,
-        ),
+        home: AuthGate(authStateChanges: Stream.value(null), initialUser: null),
       ),
     );
     await tester.pumpAndSettle();
@@ -174,7 +175,13 @@ void main() {
   testWidgets('History screen shows an empty graph with range selectors', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const MaterialApp(home: HistoryScreen()));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: HistoryScreen(
+          historyStream: Stream.value(<String, NutritionDay>{}),
+        ),
+      ),
+    );
 
     expect(find.text('History'), findsOneWidget);
     expect(find.text('1 week'), findsOneWidget);
@@ -193,13 +200,89 @@ void main() {
       rangeSelector.style?.foregroundColor?.resolve({WidgetState.selected}),
       Colors.white,
     );
-    expect(
-      rangeSelector.style?.backgroundColor?.resolve({}),
-      Colors.white,
-    );
+    expect(rangeSelector.style?.backgroundColor?.resolve({}), Colors.white);
 
     await tester.tap(find.text('1 month'));
     await tester.pumpAndSettle();
     expect(find.text('No history data yet'), findsOneWidget);
+  });
+
+  testWidgets('History charts display goal data for the selected nutrient', (
+    WidgetTester tester,
+  ) async {
+    final today = DateTime.now();
+    final history = <String, NutritionDay>{
+      dayId(today): const NutritionDay(
+        {
+          'Daily calories': 2000,
+          'Daily protein (g)': 100,
+          'Daily carbs (g)': 250,
+          'Daily sugar (g)': 25,
+          'Daily fat (g)': 70,
+        },
+        {
+          'calories': 2200,
+          'protein': 110,
+          'carbs': 260,
+          'sugar': 20,
+          'fat': 65,
+        },
+        'Balanced',
+      ),
+      dayId(today.subtract(const Duration(days: 1))): const NutritionDay(
+        {
+          'Daily calories': 1900,
+          'Daily protein (g)': 100,
+          'Daily carbs (g)': 250,
+          'Daily sugar (g)': 25,
+          'Daily fat (g)': 70,
+        },
+        {'calories': 1800, 'protein': 90, 'carbs': 240, 'sugar': 22, 'fat': 68},
+        'Balanced',
+      ),
+      dayId(today.subtract(const Duration(days: 2))): const NutritionDay(
+        {
+          'Daily calories': 2100,
+          'Daily protein (g)': 100,
+          'Daily carbs (g)': 250,
+          'Daily sugar (g)': 25,
+          'Daily fat (g)': 70,
+        },
+        {
+          'calories': 2000,
+          'protein': 100,
+          'carbs': 250,
+          'sugar': 25,
+          'fat': 70,
+        },
+        'Balanced',
+      ),
+    };
+
+    await tester.pumpWidget(
+      MaterialApp(home: HistoryScreen(historyStream: Stream.value(history))),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Calories (kcal)'), findsOneWidget);
+    expect(find.text('No history data yet'), findsNothing);
+    expect(
+      find.bySemanticsLabel(
+        'Minimum 1800 kcal; maximum 2200 kcal; average 2000 kcal; '
+        'average daily goal 2000 kcal',
+      ),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('Protein'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Protein (g)'), findsOneWidget);
+    expect(
+      find.bySemanticsLabel(
+        'Minimum 90 g; maximum 110 g; average 100 g; average daily goal 100 g',
+      ),
+      findsOneWidget,
+    );
   });
 }

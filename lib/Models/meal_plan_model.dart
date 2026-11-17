@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import './recipe_model.dart';
+
+import '../models/recipe_model.dart';
 
 class PlannedMeal {
   final String id;
@@ -37,18 +38,32 @@ class PlannedMeal {
     for (var doc in snapshot.docs) {
       final data = doc.data();
       final recipeId = data['recipeId'] ?? '';
+      final recipeSource = data['recipeSource'] ?? 'recipes';
+      final savedRecipeIdentifier = data['savedRecipeIdentifier'] as String?;
 
       Recipe? fetchedRecipe;
       if (recipeId.isNotEmpty) {
-        final recipeDoc =
-            await _firestore.collection('recipes').doc(recipeId).get();
-        
-        if (recipeDoc.exists && recipeDoc.data() != null) {
-          // ✅ FIX: Pass doc.id as the first argument, then Map<String, dynamic>
-          fetchedRecipe = Recipe.fromMap(
-            recipeDoc.id, 
-            Map<String, dynamic>.from(recipeDoc.data()!),
-          );
+        if (recipeSource == 'saved_recipes') {
+          final savedRecipes = await Recipe.fetchUserRecipes();
+          final identifier = savedRecipeIdentifier ?? recipeId;
+          for (final savedRecipe in savedRecipes) {
+            if (savedRecipe.userRecipeIdentifier == identifier) {
+              fetchedRecipe = savedRecipe;
+              break;
+            }
+          }
+        } else {
+          final recipeDoc = await _firestore
+              .collection('recipes')
+              .doc(recipeId)
+              .get();
+
+          if (recipeDoc.exists && recipeDoc.data() != null) {
+            fetchedRecipe = Recipe.fromMap(
+              recipeDoc.id,
+              Map<String, dynamic>.from(recipeDoc.data()!),
+            );
+          }
         }
       }
 
@@ -93,6 +108,8 @@ class PlannedMeal {
     required DateTime date,
     required String recipeId,
     List<String> sides = const [],
+    String recipeSource = 'recipes',
+    String? savedRecipeIdentifier,
   }) async {
     final userId = _auth.currentUser?.uid;
     if (userId == null) return;
@@ -103,7 +120,11 @@ class PlannedMeal {
       'date': Timestamp.fromDate(date),
       'recipeId': recipeId,
       'sides': sides,
+      'recipeSource': recipeSource,
     };
+    if (savedRecipeIdentifier != null) {
+      data['savedRecipeIdentifier'] = savedRecipeIdentifier;
+    }
 
     if (existingDocId != null && existingDocId.isNotEmpty) {
       await _firestore.collection('meal_plans').doc(existingDocId).update(data);

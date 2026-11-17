@@ -1,5 +1,6 @@
 import 'package:carb_cruncher/Models/filter_model.dart';
 import 'package:flutter/material.dart';
+
 import '../../models/recipe_model.dart';
 import '../../presenters/recipe_presenter.dart';
 import '../../models/step_model.dart';
@@ -7,11 +8,12 @@ import '../../models/ingredient_model.dart';
 import '../../models/nutrition_model.dart';
 import '../views/recipe_page.dart';
 import '../Models/search.model.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
 
 class MyRecipeScreen extends StatefulWidget {
   const MyRecipeScreen({super.key});
-  
+
   @override
   State<MyRecipeScreen> createState() => _MyRecipeScreenState();
 }
@@ -47,22 +49,22 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
   //Loads User Data
   String? _loadError;
 
-Future<void> _fetchMyRecipes() async {
-  try {
-    await _recipePresenter.loadRecipes();
-    if (!mounted) return;
-    setState(() {
-      _myRecipes = _recipePresenter.recipes;
-      _loadError = null;
-    });
-  } catch (error) {
-    if (!mounted) return;
-    setState(() => _loadError = 'Could not load recipes: $error');
-    Navigator.pop(context);
-  } finally {
-    if (mounted) setState(() => _isLoading = false);
+  Future<void> _fetchMyRecipes() async {
+    try {
+      await _recipePresenter.loadRecipes();
+      if (!mounted) return;
+      setState(() {
+        _myRecipes = _recipePresenter.recipes;
+        _loadError = null;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _loadError = 'Could not load recipes: $error');
+      Navigator.pop(context);
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
-}
 
   //Dialog to edit a recipe
   void _showEditRecipeDialog(Recipe recipe) {
@@ -160,14 +162,16 @@ Future<void> _fetchMyRecipes() async {
                             TextField(
                               controller: ingredientControllers[i],
                               decoration: InputDecoration(
-                                labelText: 'Ingredient ${i+1}: ',
-                                hintText: 'Ingredient Goes Here!'
+                                labelText: 'Ingredient ${i + 1}: ',
+                                hintText: 'Ingredient Goes Here!',
                               ),
                             ),
                           TextButton.icon(
                             onPressed: () {
                               setDialogState(() {
-                                ingredientControllers.add(TextEditingController());
+                                ingredientControllers.add(
+                                  TextEditingController(),
+                                );
                               });
                             },
                             icon: const Icon(Icons.add),
@@ -189,7 +193,7 @@ Future<void> _fetchMyRecipes() async {
                             TextField(
                               controller: stepControllers[i],
                               decoration: InputDecoration(
-                                labelText: 'Recipe Step ${i+1}: ',
+                                labelText: 'Recipe Step ${i + 1}: ',
                                 hintText: 'Input a Recipe Step!',
                               ),
                             ),
@@ -214,7 +218,11 @@ Future<void> _fetchMyRecipes() async {
                     return SingleChildScrollView(
                       child: Column(
                         children: [
-                          for (var i = 0; i < nutritionControllers.length && i < 7; i++)
+                          for (
+                            var i = 0;
+                            i < nutritionControllers.length && i < 7;
+                            i++
+                          )
                             TextField(
                               controller: nutritionControllers[i],
                               decoration: InputDecoration(
@@ -225,7 +233,9 @@ Future<void> _fetchMyRecipes() async {
                           TextButton.icon(
                             onPressed: () {
                               setDialogState(() {
-                                nutritionControllers.add(TextEditingController());
+                                nutritionControllers.add(
+                                  TextEditingController(),
+                                );
                               });
                             },
                             icon: const Icon(Icons.add),
@@ -236,7 +246,6 @@ Future<void> _fetchMyRecipes() async {
                     );
                   },
                 ),
-                
               ],
             ),
           ),
@@ -290,15 +299,15 @@ Future<void> _fetchMyRecipes() async {
     final selectedRecipes = _selectedRecipes.toList();
 
     for (final recipe in selectedRecipes) {
-        final originalIndex = _myRecipes.indexOf(recipe);
+      final originalIndex = _myRecipes.indexOf(recipe);
 
-         setState(() {
-          _myRecipes.remove(recipe);
-          _selectedRecipes.remove(recipe);
-        });
+      setState(() {
+        _myRecipes.remove(recipe);
+        _selectedRecipes.remove(recipe);
+      });
 
       try {
-      await _recipePresenter.deleteUserRecipe(recipe);
+        await _recipePresenter.deleteUserRecipe(recipe);
       } catch (error) {
         if (!mounted) return;
 
@@ -415,14 +424,16 @@ Future<void> _fetchMyRecipes() async {
                             TextField(
                               controller: ingredientControllers[i],
                               decoration: InputDecoration(
-                                labelText: 'Ingredient ${i+1}: ',
-                                hintText: 'Ingredient Goes Here!'
+                                labelText: 'Ingredient ${i + 1}: ',
+                                hintText: 'Ingredient Goes Here!',
                               ),
                             ),
                           TextButton.icon(
                             onPressed: () {
                               setDialogState(() {
-                                ingredientControllers.add(TextEditingController());
+                                ingredientControllers.add(
+                                  TextEditingController(),
+                                );
                               });
                             },
                             icon: const Icon(Icons.add),
@@ -444,7 +455,7 @@ Future<void> _fetchMyRecipes() async {
                             TextField(
                               controller: stepControllers[i],
                               decoration: InputDecoration(
-                                labelText: 'Recipe Step ${i+1}: ',
+                                labelText: 'Recipe Step ${i + 1}: ',
                                 hintText: 'Input a Recipe Step!',
                               ),
                             ),
@@ -469,7 +480,11 @@ Future<void> _fetchMyRecipes() async {
                     return SingleChildScrollView(
                       child: Column(
                         children: [
-                          for (var i = 0; i < nutritionControllers.length && i < 7; i++)
+                          for (
+                            var i = 0;
+                            i < nutritionControllers.length && i < 7;
+                            i++
+                          )
                             TextField(
                               controller: nutritionControllers[i],
                               decoration: InputDecoration(
@@ -480,7 +495,9 @@ Future<void> _fetchMyRecipes() async {
                           TextButton.icon(
                             onPressed: () {
                               setDialogState(() {
-                                nutritionControllers.add(TextEditingController());
+                                nutritionControllers.add(
+                                  TextEditingController(),
+                                );
                               });
                             },
                             icon: const Icon(Icons.add),
@@ -491,7 +508,6 @@ Future<void> _fetchMyRecipes() async {
                     );
                   },
                 ),
-
               ],
             ),
           ),
@@ -508,14 +524,14 @@ Future<void> _fetchMyRecipes() async {
                 saveStarted = true;
 
                 final ingredientTexts = ingredientControllers
-                  .map((controller) => controller.text.trim())
-                  .where((text) => text.isNotEmpty)
-                  .toList();
+                    .map((controller) => controller.text.trim())
+                    .where((text) => text.isNotEmpty)
+                    .toList();
 
                 final stepTexts = stepControllers
-                  .map((controller) => controller.text.trim())
-                  .where((text) => text.isNotEmpty)
-                  .toList();
+                    .map((controller) => controller.text.trim())
+                    .where((text) => text.isNotEmpty)
+                    .toList();
 
                 ingredients = ingredientTexts.asMap().entries.map((entry) {
                   return IngredientModel(
@@ -527,7 +543,9 @@ Future<void> _fetchMyRecipes() async {
 
                 steps = stepTexts.map((text) => StepModel(text: text)).toList();
 
-                if (_auth.currentUser?.uid == null){return;}
+                if (_auth.currentUser?.uid == null) {
+                  return;
+                }
 
                 final newRecipe = Recipe(
                   title: recipeTitle,
@@ -580,7 +598,7 @@ Future<void> _fetchMyRecipes() async {
 
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 247, 231, 206),
-      appBar:   AppBar(
+      appBar: AppBar(
         title: Text(
           'My Recipes',
           style: const TextStyle(
@@ -599,89 +617,91 @@ Future<void> _fetchMyRecipes() async {
                 final recipe = recipesToDisplay[index];
                 return Column(
                   children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                    child: ListTile(
-                      minVerticalPadding: 30.0,
-                      minTileHeight: 30.0,
-                      tileColor: const Color.fromARGB(255, 247, 231, 206),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16.0,
-                        vertical: 10.0,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                        side: const BorderSide(
-                          color: Color(0xFFB45309),
-                          width: 4.0,
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                      child: ListTile(
+                        minVerticalPadding: 30.0,
+                        minTileHeight: 30.0,
+                        tileColor: const Color.fromARGB(255, 247, 231, 206),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16.0,
+                          vertical: 10.0,
                         ),
-                      ),
-                      leading: SizedBox (
-                        width: 120,
-                        child: Row(
-                          children: [
-                            Checkbox(
-                              value: _selectedRecipes.contains(recipe),
-                              activeColor: const Color(0xFFB45309),
-                              onChanged: (selected) {
-                                setState(() {
-                                  if (selected == true) {
-                                    _selectedRecipes.add(recipe);
-                                  } else {
-                                    _selectedRecipes.remove(recipe);
-                                  }
-                                });
-                              },
-                            ),
-                            ClipRRect(
-                              child: recipe.imageURL != null
-                                  ? Image.network(
-                                      recipe.imageURL!,
-                                      width: 60,
-                                      height: 60,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (_, _, _) => _imagePlaceholder(),
-                                    )
-                                  : _imagePlaceholder(),
-                            ),
-                            //SizedBox(width: 12.0),
-                          ],
-                        ),
-                      ),
-                      title: Text(recipe.title),
-                      titleTextStyle: const TextStyle(
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFFB45309),
-                      ),
-                      subtitle: Text(recipe.description ?? ''),
-                      subtitleTextStyle: const TextStyle(
-                        fontSize: 14.0,
-                        color: Color(0xFFB45309),
-                      ),
-                      trailing: FloatingActionButton(
-                        tooltip: 'Edit Recipe',
-                        backgroundColor: const Color(0xFFB45309),
-                        mini: true,
-                        heroTag: 'editRecipe-${recipe.userRecipeIdentifier ?? index}',
-                        onPressed: () {
-                          _showEditRecipeDialog(recipe);
-                        },
-                        child: const Icon(Icons.edit, color: Colors.white),
-                      ),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => RecipePage(
-                              recipe: recipe,
-                              showSaveButton: false,
-                            ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                          side: const BorderSide(
+                            color: Color(0xFFB45309),
+                            width: 4.0,
                           ),
-                        );
-                      },
+                        ),
+                        leading: SizedBox(
+                          width: 120,
+                          child: Row(
+                            children: [
+                              Checkbox(
+                                value: _selectedRecipes.contains(recipe),
+                                activeColor: const Color(0xFFB45309),
+                                onChanged: (selected) {
+                                  setState(() {
+                                    if (selected == true) {
+                                      _selectedRecipes.add(recipe);
+                                    } else {
+                                      _selectedRecipes.remove(recipe);
+                                    }
+                                  });
+                                },
+                              ),
+                              ClipRRect(
+                                child: recipe.imageURL != null
+                                    ? Image.network(
+                                        recipe.imageURL!,
+                                        width: 60,
+                                        height: 60,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, _, _) =>
+                                            _imagePlaceholder(),
+                                      )
+                                    : _imagePlaceholder(),
+                              ),
+                              //SizedBox(width: 12.0),
+                            ],
+                          ),
+                        ),
+                        title: Text(recipe.title),
+                        titleTextStyle: const TextStyle(
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFFB45309),
+                        ),
+                        subtitle: Text(recipe.description ?? ''),
+                        subtitleTextStyle: const TextStyle(
+                          fontSize: 14.0,
+                          color: Color(0xFFB45309),
+                        ),
+                        trailing: FloatingActionButton(
+                          tooltip: 'Edit Recipe',
+                          backgroundColor: const Color(0xFFB45309),
+                          mini: true,
+                          heroTag:
+                              'editRecipe-${recipe.userRecipeIdentifier ?? index}',
+                          onPressed: () {
+                            _showEditRecipeDialog(recipe);
+                          },
+                          child: const Icon(Icons.edit, color: Colors.white),
+                        ),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => RecipePage(
+                                recipe: recipe,
+                                showSaveButton: false,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     ),
-                  ),
                     const SizedBox(height: 10.0),
                   ],
                 );
@@ -695,7 +715,9 @@ Future<void> _fetchMyRecipes() async {
           children: [
             CloseButton(
               color: Colors.black,
-              onPressed: () {Navigator.pop(context);},
+              onPressed: () {
+                Navigator.pop(context);
+              },
             ),
             DrawerHeader(
               child: Center(
@@ -714,321 +736,392 @@ Future<void> _fetchMyRecipes() async {
             SizedBox(height: 12),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                child: ExpansionTile(
-                  expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
-                  key: _tileKey,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                        side: const BorderSide(
-                        color: Color(0xFFB45309),
-                       width: 4.0,
+              child: ExpansionTile(
+                expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
+                key: _tileKey,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                  side: const BorderSide(color: Color(0xFFB45309), width: 4.0),
+                ),
+                collapsedShape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                  side: const BorderSide(color: Color(0xFFB45309), width: 4.0),
+                ),
+                backgroundColor: const Color.fromARGB(255, 247, 231, 206),
+                collapsedBackgroundColor: const Color.fromARGB(
+                  255,
+                  247,
+                  231,
+                  206,
+                ),
+                expandedAlignment: Alignment.center,
+                onExpansionChanged: (bool expanded) {
+                  Future.delayed(const Duration(milliseconds: 200), () {
+                    final context = _tileKey.currentContext;
+                    if (context != null) {
+                      Scrollable.ensureVisible(
+                        context,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                      );
+                    }
+                  });
+                },
+                title: Text(
+                  'Filter Recipes',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 15.0,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Homemade Apple',
+                    color: Color(0xFFB45309),
+                  ),
+                ),
+                trailing: Icon(Icons.search),
+                children: [
+                  SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: SearchAnchor(
+                      viewBarPadding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                      viewBackgroundColor: const Color.fromARGB(
+                        255,
+                        247,
+                        231,
+                        206,
                       ),
-                    ),
-                    collapsedShape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                      side: const BorderSide(
-                      color: Color(0xFFB45309),
-                      width: 4.0,
-                      ),
-                    ),
-                  backgroundColor: const Color.fromARGB(255, 247, 231, 206),
-                  collapsedBackgroundColor: const Color.fromARGB(255, 247, 231, 206),
-                  expandedAlignment: Alignment.center,
-                  onExpansionChanged: (bool expanded) {
-                    Future.delayed(const Duration(milliseconds: 200), () {
-                        final context = _tileKey.currentContext;
-                        if (context != null) {
-                          Scrollable.ensureVisible(
-                            context,
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeInOut,
-                          );
-                        }
-                      });
-                    },
-                    title: Text(
-                      'Filter Recipes',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 15.0,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Homemade Apple',
-                        color: Color(0xFFB45309),
-                      ),
-                    ),
-                    trailing: Icon(Icons.search),
-                    children: [
-                      SizedBox(height: 20),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                          child: SearchAnchor(
-                          viewBarPadding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                            viewBackgroundColor: const Color.fromARGB(255, 247, 231, 206),
-                            builder: (BuildContext context, SearchController controller) {
-                              return SearchBar(
-                                constraints: const BoxConstraints(
-                                  minHeight: 44,
-                                  maxHeight: 44,
+                      builder:
+                          (BuildContext context, SearchController controller) {
+                            return SearchBar(
+                              constraints: const BoxConstraints(
+                                minHeight: 44,
+                                maxHeight: 44,
+                              ),
+                              padding: const WidgetStatePropertyAll(
+                                EdgeInsets.symmetric(horizontal: 12),
+                              ),
+                              backgroundColor:
+                                  const WidgetStatePropertyAll<Color?>(
+                                    Color.fromARGB(255, 216, 190, 129),
                                   ),
-                                  padding: const WidgetStatePropertyAll(
-                                    EdgeInsets.symmetric(horizontal: 12),
-                                  ),
-                                backgroundColor: const WidgetStatePropertyAll<Color?>(Color.fromARGB(255, 216, 190, 129),),
-                                shape: WidgetStatePropertyAll<OutlinedBorder>(
-                                  RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10.0),
-                                    side: BorderSide(
-                                      color: Color(0xFFB45309),
-                                      width: 4.0,
-                                    ),
-                                  ),
-                                ),
-                                hintText: 'Search for a Recipe Here!',
-                                controller: controller,
-                                onTap: () {
-                                  controller.openView();
-                                },
-                                onChanged: (value) {
-                                  setState(() {
-                                    _searchQuery = value;
-                                  });
-                                  controller.openView();
-                                },
-                                leading: const Icon(Icons.search),
-                              );
-                            },
-                            suggestionsBuilder:
-                                (BuildContext context,
-                                    SearchController controller) {
-                              final matchingRecipes = _searchModel.searchRecipes(
-                                _myRecipes,
-                                controller.text,
-                              );
-                              if (matchingRecipes.isNotEmpty) {
-                                return matchingRecipes.map((Recipe recipe) {
-                                  return ListTile(
-                                    title: Text(recipe.title),
-                                    onTap: () {
-                                      setState(() {
-                                        _searchQuery = recipe.title;
-                                      });
-                                      controller.closeView(recipe.title);
-                                    },
-                                  );
-                                }).toList();
-                              }
-                              return <Widget>[
-                                ListTile(
-                                  title: Text(
-                                    _myRecipes.isEmpty
-                                        ? 'No Recipes Available'
-                                        : 'No matching recipes available',
+                              shape: WidgetStatePropertyAll<OutlinedBorder>(
+                                RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  side: BorderSide(
+                                    color: Color(0xFFB45309),
+                                    width: 4.0,
                                   ),
                                 ),
-                              ];
-                            },
-                          ),
-                      ),
+                              ),
+                              hintText: 'Search for a Recipe Here!',
+                              controller: controller,
+                              onTap: () {
+                                controller.openView();
+                              },
+                              onChanged: (value) {
+                                setState(() {
+                                  _searchQuery = value;
+                                });
+                                controller.openView();
+                              },
+                              leading: const Icon(Icons.search),
+                            );
+                          },
+                      suggestionsBuilder:
+                          (BuildContext context, SearchController controller) {
+                            final matchingRecipes = _searchModel.searchRecipes(
+                              _myRecipes,
+                              controller.text,
+                            );
+                            if (matchingRecipes.isNotEmpty) {
+                              return matchingRecipes.map((Recipe recipe) {
+                                return ListTile(
+                                  title: Text(recipe.title),
+                                  onTap: () {
+                                    setState(() {
+                                      _searchQuery = recipe.title;
+                                    });
+                                    controller.closeView(recipe.title);
+                                  },
+                                );
+                              }).toList();
+                            }
+                            return <Widget>[
+                              ListTile(
+                                title: Text(
+                                  _myRecipes.isEmpty
+                                      ? 'No Recipes Available'
+                                      : 'No matching recipes available',
+                                ),
+                              ),
+                            ];
+                          },
+                    ),
+                  ),
 
-                      Column(
-                        children: [
-                          SizedBox(height: 50),
-                          DropdownMenu<String>(
-                            inputDecorationTheme: InputDecorationTheme(
-                              filled: true,
-                              fillColor: Color.fromARGB(255, 216, 190, 129),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10.0),
-                                borderSide: BorderSide(
-                                  color: Color(0xFFB45309),
-                                  width: 4.0,
-                                ),
-                              ),
-                            ),
-                            onSelected: (String? value) {
-                              setState(() {
-                                recipeType = value; // In the nutrition dropdown callback
-                                isFilterActive =
-                                    recipeType != null &&
-                                    recipeType != 'none' &&
-                                    filterType != null &&
-                                    filterType != 'none';
-                                _filteredMyRecipes = List<Recipe>.from(_myRecipes);
-                                if (isFilterActive) {
-                                  filterController.filterRecipe(
-                                    _filteredMyRecipes,
-                                    recipeType,
-                                    filterType,
-                                  );
-                                }
-                              });
-                            },
-                            initialSelection: recipeType,
-                            label: Text('Nutrition Filter',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                              fontSize: 20.0,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Homemade Apple',
+                  Column(
+                    children: [
+                      SizedBox(height: 50),
+                      DropdownMenu<String>(
+                        inputDecorationTheme: InputDecorationTheme(
+                          filled: true,
+                          fillColor: Color.fromARGB(255, 216, 190, 129),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                            borderSide: BorderSide(
                               color: Color(0xFFB45309),
-                              ),
+                              width: 4.0,
                             ),
-                            hintText: 'Select a Filter',
-                            dropdownMenuEntries: [
-                              DropdownMenuEntry<String>(
-                                value: 'none',
-                                label: 'None',
-                                style: MenuItemButton.styleFrom(
-                                foregroundColor: Color(0xFFB45309),
-                                backgroundColor: const Color.fromARGB(255, 247, 231, 206),
-                                ),
-                              ),
-                              DropdownMenuEntry<String>(
-                                value: 'calories',
-                                label: 'Calories',
-                                style: MenuItemButton.styleFrom(
-                                foregroundColor: Color(0xFFB45309),
-                                backgroundColor: const Color.fromARGB(255, 247, 231, 206),
-                                ),
-                              ),
-                              DropdownMenuEntry<String>(
-                                value: 'fat',
-                                label: 'Fat',
-                                style: MenuItemButton.styleFrom(
-                                foregroundColor: Color(0xFFB45309),
-                                backgroundColor: const Color.fromARGB(255, 247, 231, 206),
-                                ),
-                              ),
-                              DropdownMenuEntry<String>(
-                                value: 'carbs',
-                                label: 'Carbs',
-                                style: MenuItemButton.styleFrom(
-                                foregroundColor: Color(0xFFB45309),
-                                backgroundColor: const Color.fromARGB(255, 247, 231, 206),
-                                ),
-                              ),
-                              DropdownMenuEntry<String>(
-                                value: 'servings',
-                                label: 'Servings',
-                                style: MenuItemButton.styleFrom(
-                                foregroundColor: Color(0xFFB45309),
-                                backgroundColor: const Color.fromARGB(255, 247, 231, 206),
-                                ),
-                              ),
-                              DropdownMenuEntry<String>(
-                                value: 'fiber',
-                                label: 'Fiber',
-                                style: MenuItemButton.styleFrom(
-                                foregroundColor: Color(0xFFB45309),
-                                backgroundColor: const Color.fromARGB(255, 247, 231, 206),
-                                ),
-                              ),
-                              DropdownMenuEntry<String>(
-                                value: 'protein',
-                                label: 'Protein',
-                                style: MenuItemButton.styleFrom(
-                                foregroundColor: Color(0xFFB45309),
-                                backgroundColor: const Color.fromARGB(255, 247, 231, 206),
-                                ),
-                              ),
-                              DropdownMenuEntry<String>(
-                                value: 'sodium',
-                                label: 'Sodium',
-                                style: MenuItemButton.styleFrom(
-                                foregroundColor: Color(0xFFB45309),
-                                backgroundColor: const Color.fromARGB(255, 247, 231, 206),
-                                ),
-                              ),
-                              DropdownMenuEntry<String>(
-                                value: 'sugar',
-                                label: 'Sugar',
-                                style: MenuItemButton.styleFrom(
-                                foregroundColor: Color(0xFFB45309),
-                                backgroundColor: const Color.fromARGB(255, 247, 231, 206),
-                                ),
-                              ),
-                            ],
                           ),
-                          SizedBox(height: 24),
-                          DropdownMenu<String>(
-                            inputDecorationTheme: InputDecorationTheme(
-                              filled: true,
-                              fillColor: Color.fromARGB(255, 216, 190, 129),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10.0),
-                                borderSide: BorderSide(
-                                  color: Color(0xFFB45309),
-                                  width: 4.0,
-                                ),
-                              ),
-                            ),
-                            onSelected: (String? value) {
-                              setState(() {
-                                filterType = value; // In the nutrition dropdown callback
-                                isFilterActive =
-                                    recipeType != null &&
-                                    recipeType != 'none' &&
-                                    filterType != null &&
-                                    filterType != 'none';
-                                _filteredMyRecipes = List<Recipe>.from(_myRecipes);
-                                if (isFilterActive) {
-                                  filterController.filterRecipe(
-                                    _filteredMyRecipes,
-                                    recipeType,
-                                    filterType,
-                                  );
-                                }
-                              });
-                            },
-                            initialSelection: filterType,
-                            label: Text('Recipe Title Filter',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                              fontSize: 20.0,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Homemade Apple',
-                              color: Color(0xFFB45309),
-                              ),
-                            ),
-                            hintText: 'Select a Filter',
-                            dropdownMenuEntries: [
-                              DropdownMenuEntry<String>(
-                                value: 'none',
-                                label: 'None',
-                                style: MenuItemButton.styleFrom(
-                                foregroundColor: Color(0xFFB45309),
-                                backgroundColor: const Color.fromARGB(255, 247, 231, 206),
-                                ),
-                              ),
-                              DropdownMenuEntry<String>(
-                                value: 'ascending',
-                                label: 'Ascending',
-                                style: MenuItemButton.styleFrom(
-                                foregroundColor: Color(0xFFB45309),
-                                backgroundColor: const Color.fromARGB(255, 247, 231, 206),
-                                ),
-                              ),
-                              DropdownMenuEntry<String>(
-                                value: 'descending',
-                                label: 'Descending',
-                                style: MenuItemButton.styleFrom(
-                                foregroundColor: Color(0xFFB45309),
-                                backgroundColor: const Color.fromARGB(255, 247, 231, 206),
-                                ),
-                              ),
-                            ],
+                        ),
+                        onSelected: (String? value) {
+                          setState(() {
+                            recipeType =
+                                value; // In the nutrition dropdown callback
+                            isFilterActive =
+                                recipeType != null &&
+                                recipeType != 'none' &&
+                                filterType != null &&
+                                filterType != 'none';
+                            _filteredMyRecipes = List<Recipe>.from(_myRecipes);
+                            if (isFilterActive) {
+                              filterController.filterRecipe(
+                                _filteredMyRecipes,
+                                recipeType,
+                                filterType,
+                              );
+                            }
+                          });
+                        },
+                        initialSelection: recipeType,
+                        label: Text(
+                          'Nutrition Filter',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 20.0,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Homemade Apple',
+                            color: Color(0xFFB45309),
                           ),
-                          SizedBox(height: 24),
+                        ),
+                        hintText: 'Select a Filter',
+                        dropdownMenuEntries: [
+                          DropdownMenuEntry<String>(
+                            value: 'none',
+                            label: 'None',
+                            style: MenuItemButton.styleFrom(
+                              foregroundColor: Color(0xFFB45309),
+                              backgroundColor: const Color.fromARGB(
+                                255,
+                                247,
+                                231,
+                                206,
+                              ),
+                            ),
+                          ),
+                          DropdownMenuEntry<String>(
+                            value: 'calories',
+                            label: 'Calories',
+                            style: MenuItemButton.styleFrom(
+                              foregroundColor: Color(0xFFB45309),
+                              backgroundColor: const Color.fromARGB(
+                                255,
+                                247,
+                                231,
+                                206,
+                              ),
+                            ),
+                          ),
+                          DropdownMenuEntry<String>(
+                            value: 'fat',
+                            label: 'Fat',
+                            style: MenuItemButton.styleFrom(
+                              foregroundColor: Color(0xFFB45309),
+                              backgroundColor: const Color.fromARGB(
+                                255,
+                                247,
+                                231,
+                                206,
+                              ),
+                            ),
+                          ),
+                          DropdownMenuEntry<String>(
+                            value: 'carbs',
+                            label: 'Carbs',
+                            style: MenuItemButton.styleFrom(
+                              foregroundColor: Color(0xFFB45309),
+                              backgroundColor: const Color.fromARGB(
+                                255,
+                                247,
+                                231,
+                                206,
+                              ),
+                            ),
+                          ),
+                          DropdownMenuEntry<String>(
+                            value: 'servings',
+                            label: 'Servings',
+                            style: MenuItemButton.styleFrom(
+                              foregroundColor: Color(0xFFB45309),
+                              backgroundColor: const Color.fromARGB(
+                                255,
+                                247,
+                                231,
+                                206,
+                              ),
+                            ),
+                          ),
+                          DropdownMenuEntry<String>(
+                            value: 'fiber',
+                            label: 'Fiber',
+                            style: MenuItemButton.styleFrom(
+                              foregroundColor: Color(0xFFB45309),
+                              backgroundColor: const Color.fromARGB(
+                                255,
+                                247,
+                                231,
+                                206,
+                              ),
+                            ),
+                          ),
+                          DropdownMenuEntry<String>(
+                            value: 'protein',
+                            label: 'Protein',
+                            style: MenuItemButton.styleFrom(
+                              foregroundColor: Color(0xFFB45309),
+                              backgroundColor: const Color.fromARGB(
+                                255,
+                                247,
+                                231,
+                                206,
+                              ),
+                            ),
+                          ),
+                          DropdownMenuEntry<String>(
+                            value: 'sodium',
+                            label: 'Sodium',
+                            style: MenuItemButton.styleFrom(
+                              foregroundColor: Color(0xFFB45309),
+                              backgroundColor: const Color.fromARGB(
+                                255,
+                                247,
+                                231,
+                                206,
+                              ),
+                            ),
+                          ),
+                          DropdownMenuEntry<String>(
+                            value: 'sugar',
+                            label: 'Sugar',
+                            style: MenuItemButton.styleFrom(
+                              foregroundColor: Color(0xFFB45309),
+                              backgroundColor: const Color.fromARGB(
+                                255,
+                                247,
+                                231,
+                                206,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
-          ],
-        ),
-      ),
-      Material(
+                      SizedBox(height: 24),
+                      DropdownMenu<String>(
+                        inputDecorationTheme: InputDecorationTheme(
+                          filled: true,
+                          fillColor: Color.fromARGB(255, 216, 190, 129),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                            borderSide: BorderSide(
+                              color: Color(0xFFB45309),
+                              width: 4.0,
+                            ),
+                          ),
+                        ),
+                        onSelected: (String? value) {
+                          setState(() {
+                            filterType =
+                                value; // In the nutrition dropdown callback
+                            isFilterActive =
+                                recipeType != null &&
+                                recipeType != 'none' &&
+                                filterType != null &&
+                                filterType != 'none';
+                            _filteredMyRecipes = List<Recipe>.from(_myRecipes);
+                            if (isFilterActive) {
+                              filterController.filterRecipe(
+                                _filteredMyRecipes,
+                                recipeType,
+                                filterType,
+                              );
+                            }
+                          });
+                        },
+                        initialSelection: filterType,
+                        label: Text(
+                          'Recipe Title Filter',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 20.0,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Homemade Apple',
+                            color: Color(0xFFB45309),
+                          ),
+                        ),
+                        hintText: 'Select a Filter',
+                        dropdownMenuEntries: [
+                          DropdownMenuEntry<String>(
+                            value: 'none',
+                            label: 'None',
+                            style: MenuItemButton.styleFrom(
+                              foregroundColor: Color(0xFFB45309),
+                              backgroundColor: const Color.fromARGB(
+                                255,
+                                247,
+                                231,
+                                206,
+                              ),
+                            ),
+                          ),
+                          DropdownMenuEntry<String>(
+                            value: 'ascending',
+                            label: 'Ascending',
+                            style: MenuItemButton.styleFrom(
+                              foregroundColor: Color(0xFFB45309),
+                              backgroundColor: const Color.fromARGB(
+                                255,
+                                247,
+                                231,
+                                206,
+                              ),
+                            ),
+                          ),
+                          DropdownMenuEntry<String>(
+                            value: 'descending',
+                            label: 'Descending',
+                            style: MenuItemButton.styleFrom(
+                              foregroundColor: Color(0xFFB45309),
+                              backgroundColor: const Color.fromARGB(
+                                255,
+                                247,
+                                231,
+                                206,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 24),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Material(
               type: MaterialType.transparency,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                child: ListTile(      
+                child: ListTile(
                   title: Text(
                     'Add Recipe',
                     textAlign: TextAlign.center,
@@ -1058,8 +1151,8 @@ Future<void> _fetchMyRecipes() async {
               type: MaterialType.transparency,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                child: ListTile(      
-                  title:Text(
+                child: ListTile(
+                  title: Text(
                     'Delete Recipe',
                     textAlign: TextAlign.center,
                     style: TextStyle(
@@ -1083,18 +1176,21 @@ Future<void> _fetchMyRecipes() async {
                 ),
               ),
             ),
-    ]
-  )
-)
-);
-}
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 Widget _imagePlaceholder() {
-    return Container(
-      color: const Color(0xFFB45309),
-      width: 60,
-      height: 100,
-      child: const Icon(Icons.restaurant, color: Color.fromARGB(255, 247, 231, 206)),
-    );
-  }
+  return Container(
+    color: const Color(0xFFB45309),
+    width: 60,
+    height: 100,
+    child: const Icon(
+      Icons.restaurant,
+      color: Color.fromARGB(255, 247, 231, 206),
+    ),
+  );
+}

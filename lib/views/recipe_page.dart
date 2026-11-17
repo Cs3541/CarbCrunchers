@@ -11,8 +11,15 @@ import '../nutrition/nutrition_store.dart';
 
 class RecipePage extends StatefulWidget {
   final Recipe recipe;
+  
 
-  const RecipePage({super.key, required this.recipe});
+  final bool showSaveButton;
+
+  const RecipePage({
+    super.key,
+    required this.recipe,
+    this.showSaveButton = true,
+  });
   
 
   @override
@@ -20,10 +27,9 @@ class RecipePage extends StatefulWidget {
 }
 
 class _RecipePageState extends State<RecipePage> {
+  final RecipePresenter _recipePresenter = RecipePresenter();
   final Set<int> _checked = {};
   bool _logging = false;
-  final ValueNotifier<bool> canAddToUserRecipes = ValueNotifier<bool>(true);
-  final RecipePresenter _recipePresenter = RecipePresenter();
 
   Future<void> _logServing() async {
     final recipe = widget.recipe;
@@ -235,7 +241,7 @@ class _RecipePageState extends State<RecipePage> {
       bottomNavigationBar: BottomAppBar(
         child: Row(
           children: [
-            if (canAddToUserRecipes.value)
+            if (widget.showSaveButton)
               ElevatedButton(
                 onPressed: () {
                   _recipePresenter.addUserRecipe(recipe);

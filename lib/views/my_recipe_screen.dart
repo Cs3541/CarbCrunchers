@@ -8,11 +8,6 @@ import '../../models/nutrition_model.dart';
 import '../views/recipe_page.dart';
 import '../Models/search.model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-
-class AppState {
-  static final ValueNotifier<bool> canAddToUserRecipes = ValueNotifier<bool>(false);
-}
 
 class MyRecipeScreen extends StatefulWidget {
   const MyRecipeScreen({super.key});
@@ -29,9 +24,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
   List<Recipe> _filteredMyRecipes = [];
   final Set<Recipe> _selectedRecipes = {};
   bool _isLoading = true;
-
   static final _auth = FirebaseAuth.instance;
-  static final _firestore = FirebaseFirestore.instance;
   final ingredientControllers = <TextEditingController>[];
   final stepControllers = <TextEditingController>[];
   final nutritionControllers = <TextEditingController>[];
@@ -670,18 +663,20 @@ Future<void> _fetchMyRecipes() async {
                         tooltip: 'Edit Recipe',
                         backgroundColor: const Color(0xFFB45309),
                         mini: true,
-                        heroTag: 'editRecipe-${recipe.userId ?? index}',
+                        heroTag: 'editRecipe-${recipe.userRecipeIdentifier ?? index}',
                         onPressed: () {
                           _showEditRecipeDialog(recipe);
                         },
                         child: const Icon(Icons.edit, color: Colors.white),
                       ),
                       onTap: () {
-                        AppState.canAddToUserRecipes.value = false;
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => RecipePage(recipe: recipe),
+                            builder: (_) => RecipePage(
+                              recipe: recipe,
+                              showSaveButton: false,
+                            ),
                           ),
                         );
                       },

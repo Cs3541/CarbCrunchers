@@ -4,10 +4,6 @@ import '../models/meal_plan_model.dart';
 import '../presenters/meal_plan_presenter.dart';
 import 'recipe_page.dart';
 
-class AppState {
-  static final ValueNotifier<bool> canAddToUserRecipes = ValueNotifier<bool>(false);
-}
-
 class MyMealsScreen extends StatefulWidget {
   const MyMealsScreen({super.key});
 
@@ -329,7 +325,6 @@ class _MyMealsScreenState extends State<MyMealsScreen> {
     return GestureDetector(
       onTap: () {
         if (recipe != null) {
-          AppState.canAddToUserRecipes.value = true;
           Navigator.push(
             context,
             MaterialPageRoute(

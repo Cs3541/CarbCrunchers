@@ -611,6 +611,17 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
+          : _loadError != null
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  _loadError!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Color(0xFFB45309)),
+                ),
+              ),
+            )
           : ListView.builder(
               itemCount: recipesToDisplay.length,
               itemBuilder: (context, index) {

@@ -1,17 +1,18 @@
 import 'package:carb_cruncher/interactive_recipe_screen.dart';
 import 'package:carb_cruncher/models/nutrition_model.dart';
 import 'package:flutter/material.dart';
+
 import '../Presenters/recipe_presenter.dart';
 import '../models/recipe_model.dart';
 import '../nutrition/nutrition_day.dart';
 import '../nutrition/nutrition_store.dart';
+import '../Models/meal_plan_model.dart';
 
 // THIS IS NOT FINAL.
 // This is a just a basic scaffold of the recipe page, and it can be changed later.
 
 class RecipePage extends StatefulWidget {
   final Recipe recipe;
-  
 
   final bool showSaveButton;
 
@@ -20,7 +21,6 @@ class RecipePage extends StatefulWidget {
     required this.recipe,
     this.showSaveButton = true,
   });
-  
 
   @override
   State<RecipePage> createState() => _RecipePageState();
@@ -30,6 +30,133 @@ class _RecipePageState extends State<RecipePage> {
   final RecipePresenter _recipePresenter = RecipePresenter();
   final Set<int> _checked = {};
   bool _logging = false;
+
+  Future<void> _showAddToMealPlanDialog() async {
+    final recipe = widget.recipe;
+    String selectedMealType = 'Breakfast';
+    DateTime selectedDate = DateTime.now();
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Add to Meal Plan',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFFB45309),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    initialValue: selectedMealType,
+                    decoration: const InputDecoration(labelText: 'Meal'),
+                    items: ['Breakfast', 'Lunch', 'Dinner', 'Snack']
+                        .map(
+                          (type) =>
+                              DropdownMenuItem(value: type, child: Text(type)),
+                        )
+                        .toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setSheetState(() => selectedMealType = value);
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Date'),
+                    subtitle: Text(
+                      '${selectedDate.month}/${selectedDate.day}/${selectedDate.year}',
+                    ),
+                    trailing: const Icon(Icons.calendar_today),
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: selectedDate,
+                        firstDate: DateTime(2020),
+                        lastDate: DateTime(2030),
+                      );
+                      if (picked != null) {
+                        setSheetState(() => selectedDate = picked);
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1F5DA8),
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: () async {
+                        Navigator.pop(sheetContext);
+                        final isSavedRecipe =
+                            recipe.userRecipeIdentifier != null &&
+                            recipe.userRecipeIdentifier!.isNotEmpty;
+                        final recipeId = isSavedRecipe
+                            ? recipe.userRecipeIdentifier!
+                            : recipe.userId ?? recipe.title;
+                        final messenger = ScaffoldMessenger.of(context);
+
+                        try {
+                          await PlannedMeal.addOrUpdateMeal(
+                            mealType: selectedMealType,
+                            date: selectedDate,
+                            recipeId: recipeId,
+                            recipeSource: isSavedRecipe
+                                ? 'saved_recipes'
+                                : 'recipes',
+                            savedRecipeIdentifier: isSavedRecipe
+                                ? recipe.userRecipeIdentifier
+                                : null,
+                          );
+                          if (!mounted) return;
+                          messenger.showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                '${recipe.title} added to $selectedMealType.',
+                              ),
+                            ),
+                          );
+                        } catch (error) {
+                          if (!mounted) return;
+                          messenger.showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Could not add recipe to meal plan. $error',
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                      child: const Text('Add to Plan'),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
 
   Future<void> _logServing() async {
     final recipe = widget.recipe;
@@ -255,7 +382,9 @@ class _RecipePageState extends State<RecipePage> {
                         fontFamily: 'Homemade Apple',
                         color: Color(0xFFB45309),
                       ),
-                      content: const Text('This recipe has been saved to your collection.'),
+                      content: const Text(
+                        'This recipe has been saved to your collection.',
+                      ),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.of(context).pop(),
@@ -267,14 +396,21 @@ class _RecipePageState extends State<RecipePage> {
                 },
                 child: const Text('Save Recipe'),
               ),
-            SizedBox(width: 30),
+            const SizedBox(width: 8),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: _showAddToMealPlanDialog,
+                child: const Text('Add to Meal Plan'),
+              ),
+            ),
+            const SizedBox(width: 8),
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) =>
-                      InteractiveRecipeScreen(recipe: recipe),
+                        InteractiveRecipeScreen(recipe: recipe),
                   ),
                 );
               },
@@ -369,11 +505,7 @@ class _StepTile extends StatelessWidget {
   final String text;
   final int? timerSec;
 
-  const _StepTile({
-    required this.number,
-    required this.text,
-    this.timerSec,
-  });
+  const _StepTile({required this.number, required this.text, this.timerSec});
 
   @override
   Widget build(BuildContext context) {

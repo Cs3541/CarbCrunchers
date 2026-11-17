@@ -97,8 +97,8 @@ class Recipe {
   }
 
   static Future<List<Recipe>> fetchUserRecipes() async {
-    final userId = _auth.currentUser?.email;
-    if (userId == null) return [];
+    final userId = _auth.currentUser?.displayName;
+    if (userId == _auth.currentUser?.uid) return [];
 
     final snapshot = await _firestore
         .collection('saved_recipes')
@@ -110,7 +110,7 @@ class Recipe {
       final cookSeconds = data['cook_time_sec'];
 
       return Recipe(
-        userId: doc.id,
+        userId: _auth.currentUser?.displayName,
         userRecipeIdentifier: (data['userRecipeIdentifier'] as String?) ?? (data['userRecipeIdentifier'] as String?) ?? '',
         title: data['title'] as String? ?? '',
         description: data['Description'] as String? ?? '',
@@ -127,7 +127,7 @@ class Recipe {
         keywords: (data['keywords'] as List<dynamic>? ?? [])
             .map((keyword) => keyword.toString())
             .toList(),
-        cooktime: cookSeconds is num ? (cookSeconds as num).toInt() ~/ 60 : null,
+        cooktime: cookSeconds is num ? cookSeconds.toInt() ~/ 60 : null,
         servings: (data['servings'] as num?)?.toInt(),
       );
     }).toList();
@@ -138,8 +138,8 @@ class Recipe {
     if (userId == null) return;
 
     await _firestore.collection('saved_recipes').add({
-      'userId': _auth.currentUser?.email,
-      'userRecipeIdentifier': userId,
+      'userId': _auth.currentUser?.displayName,
+      'userRecipeIdentifier': (userId+recipe.title),
       'title': recipe.title,
       'Description': recipe.description?.trim(),
       'ingredients': recipe.ingredients.map((ingredient) => ingredient.toMap()).toList(),
@@ -152,8 +152,20 @@ class Recipe {
     });
   }
 
-  static Future<void> deleteUserRecipe(Recipe recipe) async {
-    final recipeId = recipe.userRecipeIdentifier;
-    await _firestore.collection('saved_recipes').doc(recipeId).delete();
+  static Future<void> deleteUserRecipe(Recipe deleteRecipe) async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    final identifier =
+      deleteRecipe.userRecipeIdentifier ?? '${user.uid}${deleteRecipe.title}';
+    final snapshot = await _firestore
+      .collection('saved_recipes')
+      .where('userId', isEqualTo: user.displayName)
+      .where('userRecipeIdentifier', isEqualTo: identifier)
+      .get();
+
+    for (final document in snapshot.docs) {
+      await document.reference.delete();
+    }
   }
 }

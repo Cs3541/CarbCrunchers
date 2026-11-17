@@ -1,7 +1,7 @@
 import 'package:carb_cruncher/interactive_recipe_screen.dart';
 import 'package:carb_cruncher/models/nutrition_model.dart';
 import 'package:flutter/material.dart';
-
+import '../Presenters/recipe_presenter.dart';
 import '../models/recipe_model.dart';
 import '../nutrition/nutrition_day.dart';
 import '../nutrition/nutrition_store.dart';
@@ -11,14 +11,23 @@ import '../nutrition/nutrition_store.dart';
 
 class RecipePage extends StatefulWidget {
   final Recipe recipe;
+  
 
-  const RecipePage({super.key, required this.recipe});
+  final bool showSaveButton;
+
+  const RecipePage({
+    super.key,
+    required this.recipe,
+    this.showSaveButton = true,
+  });
+  
 
   @override
   State<RecipePage> createState() => _RecipePageState();
 }
 
 class _RecipePageState extends State<RecipePage> {
+  final RecipePresenter _recipePresenter = RecipePresenter();
   final Set<int> _checked = {};
   bool _logging = false;
 
@@ -229,21 +238,51 @@ class _RecipePageState extends State<RecipePage> {
           ),
         ],
       ),
-      floatingActionButton: steps.isEmpty
-          ? null
-          : FloatingActionButton.extended(
+      bottomNavigationBar: BottomAppBar(
+        child: Row(
+          children: [
+            if (widget.showSaveButton)
+              ElevatedButton(
+                onPressed: () {
+                  _recipePresenter.addUserRecipe(recipe);
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Recipe Saved'),
+                      titleTextStyle: const TextStyle(
+                        fontSize: 28.0,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Homemade Apple',
+                        color: Color(0xFFB45309),
+                      ),
+                      content: const Text('This recipe has been saved to your collection.'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('OK'),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                child: const Text('Save Recipe'),
+              ),
+            SizedBox(width: 30),
+            ElevatedButton(
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) =>
-                        InteractiveRecipeScreen(recipe: recipe),
+                      InteractiveRecipeScreen(recipe: recipe),
                   ),
                 );
               },
-              icon: const Icon(Icons.play_arrow),
-              label: const Text('Start cooking'),
+              child: Text('Start Cooking'),
             ),
+          ],
+        ),
+      ),
     );
   }
 

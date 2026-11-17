@@ -1,5 +1,4 @@
 import 'package:carb_cruncher/Models/filter_model.dart';
-import 'package:carb_cruncher/models/category_model.dart';
 import 'package:flutter/material.dart';
 import '../../models/recipe_model.dart';
 import '../../presenters/recipe_presenter.dart';
@@ -7,12 +6,8 @@ import '../../models/step_model.dart';
 import '../../models/ingredient_model.dart';
 import '../../models/nutrition_model.dart';
 import '../views/recipe_page.dart';
-import '../../Models/filter_model.dart';
 import '../Models/search.model.dart';
-import '../Models/auth_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 
 class MyRecipeScreen extends StatefulWidget {
   const MyRecipeScreen({super.key});
@@ -29,10 +24,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
   List<Recipe> _filteredMyRecipes = [];
   final Set<Recipe> _selectedRecipes = {};
   bool _isLoading = true;
-
-
   static final _auth = FirebaseAuth.instance;
-  static final _firestore = FirebaseFirestore.instance;
   final ingredientControllers = <TextEditingController>[];
   final stepControllers = <TextEditingController>[];
   final nutritionControllers = <TextEditingController>[];
@@ -53,13 +45,24 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
   }
 
   //Loads User Data
-  Future<void> _fetchMyRecipes() async {
+  String? _loadError;
+
+Future<void> _fetchMyRecipes() async {
+  try {
     await _recipePresenter.loadRecipes();
+    if (!mounted) return;
     setState(() {
       _myRecipes = _recipePresenter.recipes;
-      _isLoading = false;
+      _loadError = null;
     });
+  } catch (error) {
+    if (!mounted) return;
+    setState(() => _loadError = 'Could not load recipes: $error');
+    Navigator.pop(context);
+  } finally {
+    if (mounted) setState(() => _isLoading = false);
   }
+}
 
   //Dialog to edit a recipe
   void _showEditRecipeDialog(Recipe recipe) {
@@ -524,10 +527,12 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
 
                 steps = stepTexts.map((text) => StepModel(text: text)).toList();
 
+                if (_auth.currentUser?.uid == null){return;}
+
                 final newRecipe = Recipe(
                   title: recipeTitle,
-                  userId: _auth.currentUser?.uid,
-                  userRecipeIdentifier: _auth.currentUser?.email,
+                  userId: _auth.currentUser?.displayName,
+                  userRecipeIdentifier: _auth.currentUser!.uid + recipeTitle,
                   description: description,
                   ingredients: ingredients,
                   steps: steps,
@@ -563,7 +568,6 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
   String? filterType = 'none';
   String? recipeType = 'none';
   Filter_Model filterController = Filter_Model();
-  ScrollController _scrollController = ScrollController();
   String _searchQuery = '';
 
   //Main Screen, displays recipes and can click on recipes
@@ -659,7 +663,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                         tooltip: 'Edit Recipe',
                         backgroundColor: const Color(0xFFB45309),
                         mini: true,
-                        heroTag: 'editRecipe-${recipe.userId ?? index}',
+                        heroTag: 'editRecipe-${recipe.userRecipeIdentifier ?? index}',
                         onPressed: () {
                           _showEditRecipeDialog(recipe);
                         },
@@ -669,7 +673,10 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => RecipePage(recipe: recipe),
+                            builder: (_) => RecipePage(
+                              recipe: recipe,
+                              showSaveButton: false,
+                            ),
                           ),
                         );
                       },

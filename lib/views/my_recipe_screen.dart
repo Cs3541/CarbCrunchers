@@ -60,6 +60,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
     } catch (error) {
       if (!mounted) return;
       setState(() => _loadError = 'Could not load recipes: $error');
+      Navigator.pop(context);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -211,6 +212,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                   },
                 ),
 
+                //Nutrition Information
                 StatefulBuilder(
                   builder: (context, setDialogState) {
                     return SingleChildScrollView(
@@ -472,6 +474,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                   },
                 ),
 
+                //Nutrition Information
                 StatefulBuilder(
                   builder: (context, setDialogState) {
                     return SingleChildScrollView(
@@ -639,7 +642,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                           borderRadius: BorderRadius.circular(10.0),
                           side: const BorderSide(
                             color: Color(0xFFB45309),
-                            width: 2.0,
+                            width: 4.0,
                           ),
                         ),
                         leading: SizedBox(
@@ -671,6 +674,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                                       )
                                     : _imagePlaceholder(),
                               ),
+                              //SizedBox(width: 12.0),
                             ],
                           ),
                         ),
@@ -694,6 +698,7 @@ class _MyRecipeScreenState extends State<MyRecipeScreen> {
                           onPressed: () {
                             _showEditRecipeDialog(recipe);
                           },
+                          child: const Icon(Icons.edit, color: Colors.white),
                         ),
                         onTap: () {
                           Navigator.push(

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import '../models/meal_plan_model.dart';
 import '../presenters/meal_plan_presenter.dart';
 import 'recipe_page.dart';
@@ -14,11 +15,28 @@ class MyMealsScreen extends StatefulWidget {
 class _MyMealsScreenState extends State<MyMealsScreen> {
   late final MealPlanPresenter _presenter;
 
+  // State for the inline drawer "Add Meal" dropdown
+  String _drawerMealType = 'Breakfast';
+  late DateTime _drawerDate;
+  String? _drawerRecipeId;
+  List<dynamic> _availableRecipes = [];
+
   @override
   void initState() {
     super.initState();
     _presenter = MealPlanPresenter();
     _presenter.fetchMealsForWeek();
+    _drawerDate = _presenter.selectedWeekStart;
+    _loadRecipesForDrawer();
+  }
+
+  Future<void> _loadRecipesForDrawer() async {
+    final recipes = await _fetchAvailableRecipes();
+    if (mounted) {
+      setState(() {
+        _availableRecipes = recipes;
+      });
+    }
   }
 
   @override
@@ -79,6 +97,7 @@ class _MyMealsScreenState extends State<MyMealsScreen> {
 
     if (!mounted) return;
 
+    // Meal Editor
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -143,30 +162,41 @@ class _MyMealsScreenState extends State<MyMealsScreen> {
                   const SizedBox(height: 12),
 
                   // 3. Recipe Dropdown (Pulls real recipes from database)
-                  DropdownButtonFormField<String>(
-                    value: availableRecipes
-                            .any((r) => r['id'] == selectedRecipeId)
-                        ? selectedRecipeId
-                        : null,
-                    decoration:
-                        const InputDecoration(labelText: 'Select Recipe'),
-                    hint: const Text('Choose a recipe'),
-                    items: availableRecipes
-                      .map<DropdownMenuItem<String>>(
-                        (rec) => DropdownMenuItem<String>(
-                          value: rec['id'],
-                          child: Text(
-                            rec['title']!,
-                            overflow: TextOverflow.ellipsis,
-                            ),
-                      ),)
-                      .toList(),
-                    isExpanded: true,
-                    onChanged: (val) =>
-                        setModalState(() => selectedRecipeId = val),
-                  ),
-                  const SizedBox(height: 24),
+                  //Searchable Drop Down
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      return DropdownMenu(
+                        width: constraints.maxWidth,
+                        initialSelection: availableRecipes.any((r) => r['id'] == selectedRecipeId)
+                          ? selectedRecipeId
+                          : null,
+                        label: const Text('Select Recipe'),
+                        hintText: 'Choose a recipe',
+                        
+                        // Opens keyboard
+                        requestFocusOnTap: true,
 
+                        enableFilter: true,
+                        enableSearch: true,
+
+                        menuHeight: 250,
+
+                        onSelected: (String? val) {
+                          setModalState(() => selectedRecipeId = val);
+                        },
+                        dropdownMenuEntries: availableRecipes.map<DropdownMenuEntry<String>>(
+                          (rec) {
+                            return DropdownMenuEntry<String>(
+                              value: rec['id']!,
+                              label: rec['title']!, // Searching automatically filters against this string
+                            );
+                          },
+                        ).toList(),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 24,),
+                  
                   // Save Button
                   SizedBox(
                     width: double.infinity,
@@ -216,6 +246,8 @@ class _MyMealsScreenState extends State<MyMealsScreen> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF1F5DA8),
         elevation: 0,
+        // Ensures the automatic endDrawer three-line icon is white
+        iconTheme: const IconThemeData(color: Colors.white),
         title: Row(
           children: [
             InkWell(
@@ -262,11 +294,193 @@ class _MyMealsScreenState extends State<MyMealsScreen> {
         ),
       ),
 
-      // ADDED: Floating Action Button in Bottom Right Corner!
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF1F5DA8),
-        onPressed: () => _showAddEditMealDialog(),
-        child: const Icon(Icons.add, color: Colors.white),
+      endDrawer: Drawer(
+        backgroundColor: const Color.fromARGB(255, 247, 231, 206),
+        child: Column(
+          children: [
+            // 1. Compact Blue Header
+            Container(
+              width: double.infinity,
+              color: const Color(0xFF1F5DA8),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+              child: const SafeArea(
+                bottom: false,
+                child: Text(
+                  'Meal Options',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+
+            // Scrollable Drawer Body
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  // 2. Outlined Container + 3. Inline Dropdown ExpansionTile
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.6),
+                      border: Border.all(
+                        color: const Color(0xFF1F5DA8),
+                        width: 1.5,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Theme(
+                      // Removes default top/bottom divider lines of ExpansionTile
+                      data: Theme.of(context).copyWith(
+                        dividerColor: Colors.transparent,
+                      ),
+                      child: ExpansionTile(
+                        leading: const Icon(
+                          Icons.add_circle_outline,
+                          color: Color(0xFF1F5DA8),
+                        ),
+                        title: const Text(
+                          'Schedule New Meal',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        iconColor: const Color(0xFF1F5DA8),
+                        collapsedIconColor: const Color(0xFF1F5DA8),
+                        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                        onExpansionChanged: (isExpanded) {
+                          if (isExpanded) {
+                            // Refresh recipes & sync default date to current viewed week
+                            _loadRecipesForDrawer();
+                            setState(() {
+                              _drawerDate = _presenter.selectedWeekStart;
+                            });
+                          }
+                        },
+                        children: [
+                          // Meal Type Dropdown
+                          DropdownButtonFormField<String>(
+                            value: _drawerMealType,
+                            decoration: const InputDecoration(
+                              labelText: 'Meal Slot',
+                              isDense: true,
+                            ),
+                            items: ['Breakfast', 'Lunch', 'Dinner', 'Snack']
+                                .map((type) => DropdownMenuItem(
+                                      value: type,
+                                      child: Text(type),
+                                    ))
+                                .toList(),
+                            onChanged: (val) =>
+                                setState(() => _drawerMealType = val!),
+                          ),
+                          const SizedBox(height: 12),
+
+                          // Date Picker Row
+                          InkWell(
+                            onTap: () async {
+                              final picked = await showDatePicker(
+                                context: context,
+                                initialDate: _drawerDate,
+                                firstDate: DateTime(2020),
+                                lastDate: DateTime(2030),
+                              );
+                              if (picked != null) {
+                                setState(() => _drawerDate = picked);
+                              }
+                            },
+                            child: InputDecorator(
+                              decoration: const InputDecoration(
+                                labelText: 'Date',
+                                isDense: true,
+                                suffixIcon: Icon(Icons.calendar_today, size: 18),
+                              ),
+                              child: Text(
+                                '${_drawerDate.month}/${_drawerDate.day}/${_drawerDate.year}',
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Searchable Recipe Dropdown
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              return DropdownMenu<String>(
+                                width: constraints.maxWidth,
+                                initialSelection: _availableRecipes
+                                        .any((r) => r['id'] == _drawerRecipeId)
+                                    ? _drawerRecipeId
+                                    : null,
+                                label: const Text('Select Recipe'),
+                                hintText: 'Choose a recipe',
+                                requestFocusOnTap: true,
+                                enableFilter: true,
+                                enableSearch: true,
+                                menuHeight: 200,
+                                onSelected: (String? val) {
+                                  setState(() => _drawerRecipeId = val);
+                                },
+                                dropdownMenuEntries: _availableRecipes
+                                    .map<DropdownMenuEntry<String>>((rec) {
+                                  return DropdownMenuEntry<String>(
+                                    value: rec['id']!,
+                                    label: rec['title']!,
+                                  );
+                                }).toList(),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Save Button
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF1F5DA8),
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              onPressed: () async {
+                                if (_drawerRecipeId == null ||
+                                    _drawerRecipeId!.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Please select a Recipe'),
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                // Close the drawer
+                                Navigator.pop(context);
+
+                                await _presenter.savePlannedMeal(
+                                  mealType: _drawerMealType,
+                                  date: _drawerDate,
+                                  recipeId: _drawerRecipeId!,
+                                );
+
+                                // Reset selected recipe for next time
+                                setState(() => _drawerRecipeId = null);
+                              },
+                              child: const Text('Add to Plan'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
 
       body: StreamBuilder<List<PlannedMeal>>(

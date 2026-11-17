@@ -1,11 +1,18 @@
+import 'dart:async';
+
 import 'package:carb_cruncher/models/category_model.dart';
 import 'package:carb_cruncher/models/recipe_model.dart';
+import 'package:carb_cruncher/views/recipe_page.dart';
+import 'package:carb_cruncher/widgets/browse/recipe_search_delegate.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+
 import '../widgets/browse/category_section.dart';
 
 class AppState {
-  static final ValueNotifier<bool> canAddToUserRecipes = ValueNotifier<bool>(false);
+  static final ValueNotifier<bool> canAddToUserRecipes = ValueNotifier<bool>(
+    false,
+  );
 }
 
 enum BrowseRecipiesState { loading, loaded, error }
@@ -29,6 +36,11 @@ class _BrowseRecipiesState extends State<BrowseRecipiesScreen> {
   void initState() {
     super.initState();
     _initialLoad();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   Future<void> _initialLoad() async {
@@ -75,6 +87,23 @@ class _BrowseRecipiesState extends State<BrowseRecipiesScreen> {
             Navigator.pop(context);
           },
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () async {
+              final recipe = await showSearch<Recipe?>(
+                context: context,
+                delegate: RecipeSearchDelegate(),
+              );
+              if (recipe != null && mounted) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => RecipePage(recipe: recipe)),
+                );
+              }
+            },
+          ),
+        ],
       ),
       body: _state == BrowseRecipiesState.loading
           ? const Center(child: CircularProgressIndicator())

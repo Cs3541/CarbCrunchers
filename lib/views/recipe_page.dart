@@ -1,7 +1,6 @@
 import 'package:carb_cruncher/interactive_recipe_screen.dart';
 import 'package:carb_cruncher/models/nutrition_model.dart';
 import 'package:flutter/material.dart';
-
 import '../Presenters/recipe_presenter.dart';
 import '../models/recipe_model.dart';
 import '../nutrition/nutrition_day.dart';
@@ -23,7 +22,7 @@ class RecipePage extends StatefulWidget {
 class _RecipePageState extends State<RecipePage> {
   final Set<int> _checked = {};
   bool _logging = false;
-  bool canAddToUserRecipes = true;
+  final ValueNotifier<bool> canAddToUserRecipes = ValueNotifier<bool>(true);
   final RecipePresenter _recipePresenter = RecipePresenter();
 
   Future<void> _logServing() async {
@@ -235,27 +234,33 @@ class _RecipePageState extends State<RecipePage> {
       ),
       bottomNavigationBar: BottomAppBar(
         child: Row(
-
           children: [
-            if (canAddToUserRecipes)
-            ElevatedButton(
-            onPressed: () {
-                setState(() {
+            if (canAddToUserRecipes.value)
+              ElevatedButton(
+                onPressed: () {
                   _recipePresenter.addUserRecipe(recipe);
-                  const Icon(Icons.bookmark_added);
-                  AlertDialog(
-                    title: Text('Recipe Saved'),
-                    titleTextStyle: const TextStyle(
-                      fontSize: 28.0,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Homemade Apple',
-                      color: Color(0xFFB45309),
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Recipe Saved'),
+                      titleTextStyle: const TextStyle(
+                        fontSize: 28.0,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Homemade Apple',
+                        color: Color(0xFFB45309),
+                      ),
+                      content: const Text('This recipe has been saved to your collection.'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('OK'),
+                        ),
+                      ],
                     ),
                   );
-                });
-              },
-              child: Text ('Save Recipe'),
-            ),
+                },
+                child: const Text('Save Recipe'),
+              ),
             SizedBox(width: 30),
             ElevatedButton(
               onPressed: () {

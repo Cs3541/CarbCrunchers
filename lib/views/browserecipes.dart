@@ -2,8 +2,11 @@ import 'package:carb_cruncher/models/category_model.dart';
 import 'package:carb_cruncher/models/recipe_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-
 import '../widgets/browse/category_section.dart';
+
+class AppState {
+  static final ValueNotifier<bool> canAddToUserRecipes = ValueNotifier<bool>(false);
+}
 
 enum BrowseRecipiesState { loading, loaded, error }
 

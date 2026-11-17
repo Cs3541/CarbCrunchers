@@ -35,13 +35,17 @@ class _ArticlesPageState extends State<ArticlesPage> implements FeedView {
       _errorMessage = null;
     });
     await _presenter.loadFeed();
-    setState(() {
-      _isLoading = false;
-    });
+  }
+
+  @override
+  void dispose() {
+    _presenter.dispose();
+    super.dispose();
   }
 
   @override
   void showLoading() {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -50,6 +54,7 @@ class _ArticlesPageState extends State<ArticlesPage> implements FeedView {
 
   @override
   void showItems(List<RssItem> items) {
+    if (!mounted) return;
     setState(() {
       _items = items;
       _isLoading = false;
@@ -59,6 +64,7 @@ class _ArticlesPageState extends State<ArticlesPage> implements FeedView {
 
   @override
   void showError(String message) {
+    if (!mounted) return;
     setState(() {
       _errorMessage = message;
       _isLoading = false;

@@ -299,22 +299,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
               ),
-
-              const SizedBox(height: 16.0),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => ArticlesPage()),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1F5DA8),
-                  foregroundColor: Colors.white,
-                ),
-                child: const SizedBox(
-                  height: 72.0,
-                  child: Center(child: Text('Articles')),
+            ),
+            const SizedBox(height: 12),
+            if (_isLoadingMeals)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: CircularProgressIndicator(),
                 ),
               )
             else if (_mealLoadError != null)

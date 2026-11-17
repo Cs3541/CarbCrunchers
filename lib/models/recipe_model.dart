@@ -8,7 +8,8 @@ import '../models/nutrition_model.dart';
 import '../models/category_model.dart';
 
 class Recipe {
-  final String? id;
+  final String? userId;
+  final String? userRecipeIdentifier;
   final String title;
   final String? description;
   final List<IngredientModel> ingredients;
@@ -20,7 +21,8 @@ class Recipe {
   final int? servings;
 
   Recipe({
-    this.id,
+    this.userId,
+    this.userRecipeIdentifier,
     required this.title,
     required this.description,
     this.nutrition,
@@ -75,7 +77,7 @@ class Recipe {
         (map['cook_time_sec'] as num?) ?? (map['total_time_sec'] as num?);
 
     return Recipe(
-      id: id,
+      userId: id,
       title: (map['title']) as String? ?? '',
       description: (map['Description']) as String? ?? '',
       ingredients: (map['ingredients'] as List? ?? [])
@@ -95,18 +97,21 @@ class Recipe {
   }
 
   static Future<List<Recipe>> fetchUserRecipes() async {
-    final userId = _auth.currentUser?.uid;
-    if (userId == null) return [];
+    final userId = _auth.currentUser?.displayName;
+    if (userId == _auth.currentUser?.uid) return [];
 
     final snapshot = await _firestore
-        .collection('SavedRecipes')
+        .collection('saved_recipes')
         .where('userId', isEqualTo: userId)
         .get();
 
     return snapshot.docs.map((doc) {
       final data = doc.data();
+      final cookSeconds = data['cook_time_sec'];
+
       return Recipe(
-        id: doc.id,
+        userId: _auth.currentUser?.displayName,
+        userRecipeIdentifier: (data['userRecipeIdentifier'] as String?) ?? (data['userRecipeIdentifier'] as String?) ?? '',
         title: data['title'] as String? ?? '',
         description: data['Description'] as String? ?? '',
         ingredients: (data['ingredients'] as List? ?? [])
@@ -119,10 +124,10 @@ class Recipe {
         nutrition: data['nutrition'] != null
             ? Nutrition.fromMap(Map<String, dynamic>.from(data['nutrition']))
             : null,
-        keywords: (data['keywords'] as List<String>?)
-            ?.map((keyword) => keyword)
+        keywords: (data['keywords'] as List<dynamic>? ?? [])
+            .map((keyword) => keyword.toString())
             .toList(),
-        cooktime: (data['cook_time_sec'] as num?)?.toInt(),
+        cooktime: cookSeconds is num ? cookSeconds.toInt() ~/ 60 : null,
         servings: (data['servings'] as num?)?.toInt(),
       );
     }).toList();
@@ -132,24 +137,35 @@ class Recipe {
     final userId = _auth.currentUser?.uid;
     if (userId == null) return;
 
-    await _firestore.collection('SavedRecipes').add({
-      'userId': userId,
+    await _firestore.collection('saved_recipes').add({
+      'userId': _auth.currentUser?.displayName,
+      'userRecipeIdentifier': (userId+recipe.title),
       'title': recipe.title,
       'Description': recipe.description?.trim(),
-      'ingredients': recipe.ingredients
-          .map((ingredient) => ingredient.toMap())
-          .toList(),
+      'ingredients': recipe.ingredients.map((ingredient) => ingredient.toMap()).toList(),
       'image_url': recipe.imageURL,
-      'steps': recipe.steps,
-      'keywords': recipe.keywords,
+      'steps': recipe.steps?.map((step) => step.toMap()).toList(),
+      'keywords': recipe.keywords ?? [],
       'nutrition': recipe.nutrition?.toMap(),
       'cook_time_sec': recipe.cooktime != null ? recipe.cooktime! * 60 : null,
       'servings': recipe.servings,
     });
   }
 
-  static Future<void> deleteUserRecipe(Recipe recipe) async {
-    final recipeId = recipe.title;
-    await _firestore.collection('SavedRecipes').doc(recipeId).delete();
+  static Future<void> deleteUserRecipe(Recipe deleteRecipe) async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    final identifier =
+      deleteRecipe.userRecipeIdentifier ?? '${user.uid}${deleteRecipe.title}';
+    final snapshot = await _firestore
+      .collection('saved_recipes')
+      .where('userId', isEqualTo: user.displayName)
+      .where('userRecipeIdentifier', isEqualTo: identifier)
+      .get();
+
+    for (final document in snapshot.docs) {
+      await document.reference.delete();
+    }
   }
 }

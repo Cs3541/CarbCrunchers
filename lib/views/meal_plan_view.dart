@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../models/meal_plan_model.dart';
 import '../presenters/meal_plan_presenter.dart';
-import '../models/recipe_model.dart';
 import 'recipe_page.dart';
 
 class MyMealsScreen extends StatefulWidget {

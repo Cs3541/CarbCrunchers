@@ -38,14 +38,16 @@ class Recipe {
   static final _auth = FirebaseAuth.instance;
 
   static Future<List<Recipe>> searchRecipies(String query) async {
-    final q = query.toLowerCase();
-    if (q.isEmpty) return [];
+    final trimmed = query.toLowerCase();
+    if (trimmed.isEmpty) return [];
+
+    final q = trimmed[0].toUpperCase() + trimmed.substring(1);
 
     final snap = await _firestore
         .collection("recipes")
-        .where('nameLower', isGreaterThanOrEqualTo: q)
-        .where('nameLower', isLessThan: '$q\uf8ff')
-        .orderBy('nameLower')
+        .where('title', isGreaterThanOrEqualTo: q)
+        .where('title', isLessThanOrEqualTo: '${q}\uf8ff')
+        .orderBy('title')
         .limit(10)
         .get();
 

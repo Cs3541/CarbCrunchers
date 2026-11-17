@@ -1,5 +1,4 @@
 import 'package:carb_cruncher/Models/filter_model.dart';
-import 'package:carb_cruncher/models/category_model.dart';
 import 'package:flutter/material.dart';
 import '../../models/recipe_model.dart';
 import '../../presenters/recipe_presenter.dart';
@@ -7,12 +6,9 @@ import '../../models/step_model.dart';
 import '../../models/ingredient_model.dart';
 import '../../models/nutrition_model.dart';
 import '../views/recipe_page.dart';
-import '../../Models/filter_model.dart';
 import '../Models/search.model.dart';
-import '../Models/auth_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 
 class MyRecipeScreen extends StatefulWidget {
   const MyRecipeScreen({super.key});
@@ -534,11 +530,13 @@ Future<void> _fetchMyRecipes() async {
                 }).toList();
 
                 steps = stepTexts.map((text) => StepModel(text: text)).toList();
-                
+
+                if (_auth.currentUser?.uid == null){return;}
+
                 final newRecipe = Recipe(
                   title: recipeTitle,
-                  userId: _auth.currentUser?.uid,
-                  userRecipeIdentifier: _auth.currentUser?.email,
+                  userId: _auth.currentUser?.displayName,
+                  userRecipeIdentifier: _auth.currentUser!.uid + recipeTitle,
                   description: description,
                   ingredients: ingredients,
                   steps: steps,
@@ -574,7 +572,6 @@ Future<void> _fetchMyRecipes() async {
   String? filterType = 'none';
   String? recipeType = 'none';
   Filter_Model filterController = Filter_Model();
-  ScrollController _scrollController = ScrollController();
   String _searchQuery = '';
 
   //Main Screen, displays recipes and can click on recipes

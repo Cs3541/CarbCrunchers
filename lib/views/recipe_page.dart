@@ -233,35 +233,45 @@ class _RecipePageState extends State<RecipePage> {
           ),
         ],
       ),
-      appBar: AppBar(
-        actions: [
-          if (canAddToUserRecipes)
-            TextButton.icon(
-              onPressed: () {
+      bottomNavigationBar: BottomAppBar(
+        child: Row(
+
+          children: [
+            if (canAddToUserRecipes)
+            ElevatedButton(
+            onPressed: () {
                 setState(() {
                   _recipePresenter.addUserRecipe(recipe);
+                  const Icon(Icons.bookmark_added);
+                  AlertDialog(
+                    title: Text('Recipe Saved'),
+                    titleTextStyle: const TextStyle(
+                      fontSize: 28.0,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Homemade Apple',
+                      color: Color(0xFFB45309),
+                    ),
+                  );
                 });
               },
-              icon: const Icon(Icons.bookmark_add_outlined),
-              label: const Text('Save'),
+              child: Text ('Save Recipe'),
             ),
-        ],
-      ),
-      floatingActionButton: steps.isEmpty
-          ? null
-          : FloatingActionButton.extended(
+            SizedBox(width: 30),
+            ElevatedButton(
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) =>
-                        InteractiveRecipeScreen(recipe: recipe),
+                      InteractiveRecipeScreen(recipe: recipe),
                   ),
                 );
               },
-              icon: const Icon(Icons.play_arrow),
-              label: const Text('Start cooking'),
+              child: Text('Start Cooking'),
             ),
+          ],
+        ),
+      ),
     );
   }
 

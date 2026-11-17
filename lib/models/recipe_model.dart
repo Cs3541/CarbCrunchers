@@ -127,7 +127,7 @@ class Recipe {
         keywords: (data['keywords'] as List<dynamic>? ?? [])
             .map((keyword) => keyword.toString())
             .toList(),
-        cooktime: cookSeconds is num ? (cookSeconds as num).toInt() ~/ 60 : null,
+        cooktime: cookSeconds is num ? cookSeconds.toInt() ~/ 60 : null,
         servings: (data['servings'] as num?)?.toInt(),
       );
     }).toList();
@@ -138,8 +138,8 @@ class Recipe {
     if (userId == null) return;
 
     await _firestore.collection('saved_recipes').add({
-      'userId': _auth.currentUser?.email,
-      'userRecipeIdentifier': userId,
+      'userId': _auth.currentUser?.displayName,
+      'userRecipeIdentifier': (userId+recipe.title),
       'title': recipe.title,
       'Description': recipe.description?.trim(),
       'ingredients': recipe.ingredients.map((ingredient) => ingredient.toMap()).toList(),
@@ -153,7 +153,7 @@ class Recipe {
   }
 
   static Future<void> deleteUserRecipe(Recipe recipe) async {
-    final recipeId = recipe.userRecipeIdentifier;
+    final recipeId = recipe.title;
     await _firestore.collection('saved_recipes').doc(recipeId).delete();
   }
 }

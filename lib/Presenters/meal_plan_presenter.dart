@@ -34,18 +34,24 @@ class MealPlanPresenter {
 
   // Save/Update meal and refresh view
   Future<void> savePlannedMeal({
-    String? existingDocId,
-    required String mealType,
-    required DateTime date,
-    required String recipeId,
+  String? existingDocId,
+  required String mealType,
+  required DateTime date,
+  required String recipeId,
+  List<String> sides = const [],
+  String recipeSource = 'recipes',
+  String? savedRecipeIdentifier,
   }) async {
     await PlannedMeal.addOrUpdateMeal(
       existingDocId: existingDocId,
       mealType: mealType,
       date: date,
       recipeId: recipeId,
+      sides: sides,
+      recipeSource: recipeSource,
+      savedRecipeIdentifier: savedRecipeIdentifier,
     );
-    await fetchMealsForWeek();
+  await fetchMealsForWeek();
   }
 
   // Change selected week forward (+1) or backward (-1)

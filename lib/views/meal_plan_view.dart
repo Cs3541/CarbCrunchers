@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import '../models/meal_plan_model.dart';
 import '../presenters/meal_plan_presenter.dart';
+import '../models/recipe_model.dart';
 import 'recipe_page.dart';
 
 class MyMealsScreen extends StatefulWidget {
@@ -19,6 +20,7 @@ class _MyMealsScreenState extends State<MyMealsScreen> {
   String _drawerMealType = 'Breakfast';
   late DateTime _drawerDate;
   String? _drawerRecipeId;
+  bool _drawerShowSavedOnly = false;
   List<dynamic> _availableRecipes = [];
 
   @override
@@ -31,7 +33,7 @@ class _MyMealsScreenState extends State<MyMealsScreen> {
   }
 
   Future<void> _loadRecipesForDrawer() async {
-    final recipes = await _fetchAvailableRecipes();
+    final recipes = await _fetchAvailableRecipes(savedOnly: _drawerShowSavedOnly);
     if (mounted) {
       setState(() {
         _availableRecipes = recipes;
@@ -74,7 +76,22 @@ class _MyMealsScreenState extends State<MyMealsScreen> {
   }
 
   // Fetch available recipes from Firestore for the dropdown
-  Future<List> _fetchAvailableRecipes() async {
+  Future<List> _fetchAvailableRecipes({
+    required bool savedOnly,
+  }) async {
+    if (savedOnly) {
+      final savedRecipes = await Recipe.fetchUserRecipes();
+      return savedRecipes.map((r) {
+        final identifier = r.userRecipeIdentifier ?? r.title;
+        return {
+          'id': identifier,
+          'title': r.title,
+          'source': 'saved_recipes',
+          'savedRecipeIdentifier': identifier,
+        };
+      }).toList();
+    }
+
     final snapshot =
         await FirebaseFirestore.instance.collection('recipes').get();
     return snapshot.docs.map((doc) {
@@ -82,6 +99,8 @@ class _MyMealsScreenState extends State<MyMealsScreen> {
       return {
         'id': doc.id,
         'title': (data['title'] ?? 'Untitled Recipe').toString(),
+        'source': 'recipes',
+        'savedRecipeIdentifier': null,
       };
     }).toList();
   }
@@ -91,9 +110,11 @@ class _MyMealsScreenState extends State<MyMealsScreen> {
     String selectedMealType = existingMeal?.mealType ?? 'Breakfast';
     DateTime selectedDate = existingMeal?.date ?? _presenter.selectedWeekStart;
     String? selectedRecipeId = existingMeal?.recipeId;
+    bool showSavedOnly = false;
 
     // Fetch existing recipes for dropdown selection
-    final availableRecipes = await _fetchAvailableRecipes();
+    var availableRecipes = await _fetchAvailableRecipes(savedOnly: showSavedOnly);
+  
 
     if (!mounted) return;
 
@@ -126,6 +147,32 @@ class _MyMealsScreenState extends State<MyMealsScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
+
+                  SegmentedButton<bool>(
+                    segments: const [
+                      ButtonSegment(
+                        value: false,
+                        label: Text('All Recipes'),
+                        icon: Icon(Icons.menu_book),
+                      ),
+                      ButtonSegment(
+                        value: true,
+                        label: Text('My Saved'),
+                        icon: Icon(Icons.favorite),
+                      ),
+                    ],
+                    selected: {showSavedOnly},
+                    onSelectionChanged: (Set<bool> newSelection) async {
+                      final nextValue = newSelection.first;
+                      final updatedList = await _fetchAvailableRecipes(savedOnly: nextValue);
+                      setModalState(() {
+                        showSavedOnly = nextValue;
+                        availableRecipes = updatedList;
+                        selectedRecipeId = null; // Reset selection when switching lists
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 12),
 
                   // 1. Meal Type Dropdown
                   DropdownButtonFormField<String>(
@@ -402,6 +449,32 @@ class _MyMealsScreenState extends State<MyMealsScreen> {
                                 '${_drawerDate.month}/${_drawerDate.day}/${_drawerDate.year}',
                               ),
                             ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          SegmentedButton<bool>(
+                            segments: const [
+                              ButtonSegment(
+                                value: false,
+                                label: Text('All'),
+                                icon: Icon(Icons.menu_book, size: 16),
+                              ),
+                              ButtonSegment(
+                                value: true,
+                                label: Text('My Saved'),
+                                icon: Icon(Icons.favorite, size: 16),
+                              ),
+                            ],
+                            selected: {_drawerShowSavedOnly},
+                            onSelectionChanged: (Set<bool> newSelection) async {
+                              final nextValue = newSelection.first;
+                              final updatedList = await _fetchAvailableRecipes(savedOnly: nextValue);
+                              setState(() {
+                                _drawerShowSavedOnly = nextValue;
+                                _availableRecipes = updatedList;
+                                _drawerRecipeId = null;
+                              });
+                            },
                           ),
                           const SizedBox(height: 16),
 

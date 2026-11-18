@@ -13,6 +13,7 @@ import 'meal_plan_view.dart';
 import 'recipe_page.dart';
 import '../Views/profile_screen.dart';
 import '../Models/meal_plan_model.dart';
+import 'shopping_list_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -169,25 +170,52 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 16.0),
 
-                // Meal Plan Button
-                ElevatedButton(
-                  onPressed: () async {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const MyMealsScreen(),
+                // Meal Plan and shopping list buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const MyMealsScreen(),
+                            ),
+                          );
+                          await _loadTodaysMeals();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1F5DA8),
+                          foregroundColor: Colors.white,
+                        ),
+                        child: const SizedBox(
+                          height: 72.0,
+                          child: Center(child: Text("My Meals")),
+                        ),
                       ),
-                    );
-                    await _loadTodaysMeals();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1F5DA8),
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const SizedBox(
-                    height: 72.0,
-                    child: Center(child: Text("My Meals")),
-                  ),
+                    ),
+                    const SizedBox(width: 16.0),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ShoppingListsScreen(),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1F5DA8),
+                          foregroundColor: Colors.white,
+                        ),
+                        child: const SizedBox(
+                          height: 72.0,
+                          child: Center(child: Text("Shopping List")),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 16.0),
                 _buildTodaysMealPlan(context),

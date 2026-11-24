@@ -9,6 +9,7 @@ import 'package:image/image.dart' as img;
 
 import '../Presenters/AuthPresenter.dart';
 import '../widgets/profile_avatar.dart';
+import 'friends_screen.dart';
 import 'history_screen.dart';
 
 enum _ManageAccountAction { username, password }
@@ -564,20 +565,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 20),
                         child: SizedBox(
                           width: double.infinity,
-                          child: OutlinedButton.icon(
-                            onPressed: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => const HistoryScreen(),
+                          child: Column(
+                            children: [
+                              OutlinedButton.icon(
+                                key: const ValueKey('friends-button'),
+                                onPressed: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const FriendsScreen(),
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(Icons.people_outline),
+                                label: const Text('Friends'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: _primaryColor,
+                                  minimumSize: const Size.fromHeight(48),
                                 ),
-                              );
-                            },
-                            icon: const Icon(Icons.history),
-                            label: const Text('History'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: _primaryColor,
-                              minimumSize: const Size.fromHeight(48),
-                            ),
+                              ),
+                              const SizedBox(height: 12),
+                              OutlinedButton.icon(
+                                onPressed: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const HistoryScreen(),
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(Icons.history),
+                                label: const Text('History'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: _primaryColor,
+                                  minimumSize: const Size.fromHeight(48),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
